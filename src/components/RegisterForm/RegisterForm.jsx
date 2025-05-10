@@ -4,8 +4,8 @@ const RegisterForm = ({ text, type, placeholder, value, onChange }) => {
   return (
     <div>
       <div className="d-flex align-items-center">
-        <div className="me-5 w-25">
-          <p className="me-3 fw-bold">{text}</p>
+        <div className="m-2">
+          <p className="fw-bold text-white">{text}</p>
         </div>
         <div className="w-100">
           <input

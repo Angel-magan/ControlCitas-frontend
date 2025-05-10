@@ -9,6 +9,7 @@ import "../Register/styleRegister.css";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -24,9 +25,9 @@ const Login = () => {
     }
 
     axios
-      .post("http://localhost:5000/api/users/iniciarSesion", {
+      .post("http://localhost:5000/api/usuarios/iniciarSesion", {
         correo: email,
-        clave: password,
+        contrasena: password,
       })
       .then((response) => {
         Swal.fire({
@@ -59,23 +60,33 @@ const Login = () => {
       <section className="w-50">
         <h2 className="text-center text-light mb-3">Iniciar sesión</h2>
         <div className="text-light border-b-3" style={{ textAlign: "center" }}>
-          <div style={{ marginLeft: "35px" }}>
-            <RegisterForm
-              text="Correo:"
-              type="text"
-              placeholder="Ingrese correo"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <RegisterForm
-              text="Contraseña:"
-              type="password"
-              placeholder="Ingrese contraseña"
+          <input
+            className="form-control mb-3"
+            style={{ height: "43px" }}
+            type="text"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <div className="input-group mb-4">
+            <input
+              type={showPassword ? "text" : "password"}
+              className="form-control"
+              placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <span
+              className="input-group-text"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ cursor: "pointer" }}
+            >
+              {showPassword ? (
+                <i className="bi bi-eye-slash-fill fs-5 text-primary"></i>
+              ) : (
+                <i className="bi bi-eye-fill fs-5 text-primary"></i>
+              )}
+            </span>
           </div>
           <button
             type="button"
@@ -86,8 +97,11 @@ const Login = () => {
           </button>
         </div>
       </section>
-      <section className="border-start p-5" style={{ textAlign: "center" }}>
-        <h2 className="text-white">¿No tienes cuenta?</h2>
+      <section
+        className="border-start border-dark border-5 p-5"
+        style={{ textAlign: "center" }}
+      >
+        <h2 className="text-dark">¿No tienes cuenta?</h2>
         <Link to="/registerUser">
           <button className="btn btn-primary fw-bold px-4 mt-4">
             Registrarse

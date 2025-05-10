@@ -10,9 +10,14 @@ import RegisterForm from "../../components/RegisterForm/RegisterForm";
 const RegisterUser = () => {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [gender, setGender] = useState("");
   const [role, setRole] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [hoverDisabled, setHoverDisabled] = useState(false);
   const navigate = useNavigate();
 
   //Para ingresar el usuario
@@ -20,7 +25,16 @@ const RegisterUser = () => {
     // Validar el formato del correo electrónico
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
-    if (name && lastName && email && password && role) {
+    if (
+      name &&
+      lastName &&
+      address &&
+      phone &&
+      email &&
+      password &&
+      gender &&
+      role
+    ) {
       // Verificar si el correo tiene un formato válido
       if (!emailRegex.test(email)) {
         Swal.fire({
@@ -34,11 +48,14 @@ const RegisterUser = () => {
       }
       // Hacer la solicitud al backend para registrar el usuario
       axios
-        .post("http://localhost:5000/api/users/registrarUsuario", {
-          nombre: name,
-          apellido: lastName,
+        .post("http://localhost:5000/api/usuarios/registrarUsuario", {
+          nombres: name,
+          apellidos: lastName,
+          direccion: address,
+          telefono: phone,
           correo: email,
-          clave: password,
+          contrasena: password,
+          sexo: gender,
           rol: role,
         })
         .then(() => {
@@ -98,18 +115,32 @@ const RegisterUser = () => {
       <div className="w-50">
         <h2 className="text-white text-center">Regitro de usuario</h2>
         <RegisterForm
-          text="Nombre:"
+          text="Nombres:"
           type="text"
-          placeholder="Nombre"
+          placeholder="Nombres"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <RegisterForm
-          text="Apellido:"
+          text="Apellidos:"
           type="text"
-          placeholder="Apellido"
+          placeholder="Apellidos"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
+        />
+        <RegisterForm
+          text="Dirección:"
+          type="text"
+          placeholder="Dirección"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+        <RegisterForm
+          text="Teléfono:"
+          type="text"
+          placeholder="Teléfono"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
         />
         <div style={{ marginLeft: "15px" }}>
           <RegisterForm
@@ -122,7 +153,22 @@ const RegisterUser = () => {
         </div>
         <div
           className="d-flex justify-content-start align-items-center mb-3"
-          style={{ marginLeft: "40px" }}
+          style={{ marginLeft: "15px" }}
+        >
+          <p className="text-white fw-bold mb-0 me-3">Genero:</p>
+          <select
+            className="form-select"
+            aria-label="Default select example"
+            onChange={(e) => setGender(e.target.value)}
+          >
+            <option selected>Genero</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
+        </div>
+        <div
+          className="d-flex justify-content-start align-items-center mb-3"
+          style={{ marginLeft: "45px" }}
         >
           <p className="text-white fw-bold mb-0 me-3">Rol:</p>
           <select
@@ -135,24 +181,59 @@ const RegisterUser = () => {
             <option value="Usuario">Usuario</option>
           </select>
         </div>
-        <div style={{ marginLeft: "30px" }}>
-          <RegisterForm
-            text="Clave:"
-            type="text"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <section className="d-flex justify-content-center mt-4">
-          <button
-            type="button"
-            className="btn btn-primary fw-bold px-4 me-3"
-            disabled={!name || !lastName || !email || !password || !role}
-            onClick={handleRegister}
+        <div className="d-flex">
+          <div className="flex-grow-1 me-2">
+            <RegisterForm
+              text="Contraseña:"
+              type={showPassword ? "text" : "password"}
+              placeholder="contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{ cursor: "pointer" }}
           >
-            Registrarme
-          </button>
+            {showPassword ? (
+              <i className="bi bi-eye-slash-fill fs-4 text-white"></i>
+            ) : (
+              <i className="bi bi-eye-fill fs-4 text-white"></i>
+            )}
+          </span>
+        </div>
+        <section className="d-flex justify-content-center mt-3">
+          <div
+            className="position-relative d-inline-block"
+            onMouseEnter={() => setHoverDisabled(true)}
+            onMouseLeave={() => setHoverDisabled(false)}
+          >
+            <button
+              type="button"
+              className="btn btn-primary fw-bold px-4 me-3"
+              disabled={
+                !name ||
+                !lastName ||
+                !address ||
+                !phone ||
+                !email ||
+                !password ||
+                !gender ||
+                !role
+              }
+              onClick={handleRegister}
+            >
+              Registrarme
+            </button>
+            {(!name || !lastName || !email || !password) && hoverDisabled && (
+              <div
+                className="position-absolute top-50 start-50 translate-middle"
+                style={{ pointerEvents: "none" }}
+              >
+                <i className="bi bi-ban text-danger fw-bold fs-4"></i>
+              </div>
+            )}
+          </div>
           <Link to="/">
             <button className="btn btn-primary fw-bold px-4">Regresar</button>
           </Link>

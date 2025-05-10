@@ -1,0 +1,11 @@
+.fondo {
+  background-image: url("https://wp-s.ru/wallpapers/0/14/540761447988391/moto-roja-sobre-fondo-de-monta-a.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+
+  display: flex;
+  justify-content: space-evenly; /* Centra horizontalmente */
+  align-items: center;
+}

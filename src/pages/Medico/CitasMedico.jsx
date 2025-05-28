@@ -26,7 +26,7 @@ const estadoTexto = (estado) => {
 };
 
 const CitasMedico = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const medico = JSON.parse(localStorage.getItem("medico"));
     const [citas, setCitas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [estadoFiltro, setEstadoFiltro] = useState("");
@@ -39,7 +39,7 @@ const CitasMedico = () => {
         setLoading(true);
         try {
             const params = {
-                id_medico: user.id_medico,
+                id_medico: medico.id_medico,
                 estado: estadoFiltro,
                 q: busqueda,
                 fecha: fechaFiltro,
@@ -82,26 +82,20 @@ const CitasMedico = () => {
 
     // HU10 - Cancelar cita como médico
     const cancelarCita = async (id_cita) => {
-        const { value: motivo } = await Swal.fire({
-            title: "Cancelar cita",
-            input: "textarea",
-            inputLabel: "Motivo de la cancelación",
-            inputPlaceholder: "Escribe el motivo...",
-            inputAttributes: { "aria-label": "Motivo de la cancelación" },
+        const confirm = await Swal.fire({
+            title: "¿Cancelar cita?",
+            text: "¿Estás seguro de cancelar esta cita?",
+            icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Cancelar cita",
-            cancelButtonText: "Volver",
-            inputValidator: (value) => {
-                if (!value) return "Debes ingresar un motivo";
-            },
+            confirmButtonText: "Sí, cancelar",
+            cancelButtonText: "No",
         });
-        if (motivo) {
+        if (confirm.isConfirmed) {
             try {
                 await axios.put(
                     `http://localhost:5000/api/medico/cancelarCita/${id_cita}`,
                     {
-                        id_medico: user.id_medico,
-                        motivo_cancelacion: motivo,
+                        id_medico: medico.id_medico
                     }
                 );
                 Swal.fire("Cita cancelada", "La cita fue cancelada correctamente.", "success");
@@ -115,6 +109,16 @@ const CitasMedico = () => {
                 );
             }
         }
+    };
+
+    // Función para formatear fecha a dd/mm/yyyy
+    const formatearFecha = (fechaStr) => {
+        if (!fechaStr) return "";
+        const fecha = new Date(fechaStr);
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        const anio = fecha.getFullYear();
+        return `${dia}/${mes}/${anio}`;
     };
 
     return (
@@ -186,7 +190,7 @@ const CitasMedico = () => {
                                     <td>
                                         {cita.paciente_nombre} {cita.paciente_apellido}
                                     </td>
-                                    <td>{cita.fecha_cita}</td>
+                                    <td>{formatearFecha(cita.fecha_cita)}</td>
                                     <td>{cita.hora_cita}</td>
                                     <td>
                                         <span
@@ -260,7 +264,7 @@ const CitasMedico = () => {
                         <div>
                             <b>Paciente:</b> {detalle.paciente_nombre} {detalle.paciente_apellido}
                             <br />
-                            <b>Fecha:</b> {detalle.fecha_cita}
+                            <b>Fecha:</b> {formatearFecha(detalle.fecha_cita)}
                             <br />
                             <b>Hora:</b> {detalle.hora_cita}
                             <br />
@@ -269,8 +273,6 @@ const CitasMedico = () => {
                             <b>Estado:</b> {estadoTexto(detalle.estado)}
                             <br />
                             <b>Motivo:</b> {detalle.motivo || "No especificado"}
-                            <br />
-                            <b>Comentarios del paciente:</b> {detalle.comentarios || "N/A"}
                             <br />
                             {detalle.estado === 1 && (
                                 <>
@@ -285,15 +287,7 @@ const CitasMedico = () => {
                                 </>
                             )}
                         </div>
-                        {/* HU10: Cancelar desde modal si pendiente */}
-                        {detalle.estado === 0 && (
-                            <button
-                                className="btn btn-outline-danger w-100 mt-3"
-                                onClick={() => cancelarCita(detalle.id_cita)}
-                            >
-                                Cancelar cita
-                            </button>
-                        )}
+                        
                     </div>
                 </div>
             )}

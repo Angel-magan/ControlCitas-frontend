@@ -14,12 +14,16 @@ const MisCitas = () => {
   const [estado, setEstado] = useState("");
   const [citas, setCitas] = useState([]);
   const [mensaje, setMensaje] = useState("");
+  const paciente = JSON.parse(localStorage.getItem("paciente"));
 
   const cargarCitas = async () => {
     try {
-      const id_paciente = localStorage.getItem("id_paciente");
+      console.log(paciente);
+      const id_paciente = paciente.id_paciente;
       const params = { id_paciente, tipo };
       if (estado) params.estado = estado;
+      console.log(params);
+      console.log(id_paciente);
       const res = await axios.get("http://localhost:5000/api/pacientes/consultarCitas", { params });
       setCitas(res.data);
       if (res.data.length === 0) setMensaje("No hay citas registradas.");
@@ -37,7 +41,8 @@ const MisCitas = () => {
   const cancelarCita = async id_cita => {
     if (!window.confirm("¿Seguro que deseas cancelar esta cita?")) return;
     try {
-      const id_paciente = localStorage.getItem("id_paciente");
+      
+      const id_paciente = paciente.id_paciente;
       await axios.put("http://localhost:5000/api/pacientes/cancelarCita", { id_paciente, id_cita });
       cargarCitas();
       setMensaje("Cita cancelada exitosamente.");
@@ -45,6 +50,15 @@ const MisCitas = () => {
       setMensaje(err.response?.data?.error || "Error al cancelar cita");
     }
   };
+
+  const formatearFecha = (fechaStr) => {
+        if (!fechaStr) return "";
+        const fecha = new Date(fechaStr);
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        const anio = fecha.getFullYear();
+        return `${dia}/${mes}/${anio}`;
+    };
 
   return (
     <>
@@ -78,12 +92,13 @@ const MisCitas = () => {
           style={{ width: "100%", maxWidth: "700px" }}
         >
           <button
-            className={`btn btn-primary fw-bold px-4 ${tipo === "futuras" ? "" : "opacity-75"}`}
+            className="btn btn-primary fw-bold px-4"
             style={{
               background: "#2e5da1",
               border: "none",
               borderRadius: "0.7rem",
               minWidth: "150px",
+              opacity: tipo === "futuras" ? 1 : 0.6, // Cambia opacidad aquí
             }}
             onClick={() => setTipo("futuras")}
             disabled={tipo === "futuras"}
@@ -91,13 +106,14 @@ const MisCitas = () => {
             Citas Futuras
           </button>
           <button
-            className={`btn btn-warning fw-bold px-4 ${tipo === "pasadas" ? "" : "opacity-75"}`}
+            className="btn btn-warning fw-bold px-4"
             style={{
               background: "#fad02c",
               color: "#2e5da1",
               border: "none",
               borderRadius: "0.7rem",
               minWidth: "150px",
+              opacity: tipo === "pasadas" ? 1 : 0.6, // Cambia opacidad aquí
             }}
             onClick={() => setTipo("pasadas")}
             disabled={tipo === "pasadas"}
@@ -148,7 +164,7 @@ const MisCitas = () => {
                   <tr key={c.id_cita}>
                     <td>{c.medico_nombre} {c.medico_apellido}</td>
                     <td>{c.especialidad}</td>
-                    <td>{c.fecha_cita}</td>
+                    <td>{formatearFecha(c.fecha_cita)}</td>
                     <td>{c.hora_cita.slice(0, 5)}</td>
                     <td>
                       <span

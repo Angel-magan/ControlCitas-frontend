@@ -15,15 +15,32 @@ const RegisterUser = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState("");
-  const [role, setRole] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [hoverDisabled, setHoverDisabled] = useState(false);
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
   const navigate = useNavigate();
 
   //Para ingresar el usuario
   const handleRegister = () => {
     // Validar el formato del correo electrónico
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+    // Validar que la fecha de nacimiento no sea futura
+    if (fechaNacimiento) {
+      const hoy = new Date();
+      const fechaNac = new Date(fechaNacimiento);
+      hoy.setHours(0, 0, 0, 0);
+      if (fechaNac > hoy) {
+        Swal.fire({
+          title: "Error",
+          text: "La fecha de nacimiento no puede ser una fecha futura.",
+          icon: "error",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        return;
+      }
+    }
 
     if (
       name &&
@@ -32,8 +49,7 @@ const RegisterUser = () => {
       phone &&
       email &&
       password &&
-      gender &&
-      role
+      gender
     ) {
       // Verificar si el correo tiene un formato válido
       if (!emailRegex.test(email)) {
@@ -56,7 +72,8 @@ const RegisterUser = () => {
           correo: email,
           contrasena: password,
           sexo: gender,
-          rol: role,
+          rol: "paciente", // <-- Forzar rol paciente
+          fechaNacimiento,
         })
         .then(() => {
           Swal.fire({
@@ -112,97 +129,92 @@ const RegisterUser = () => {
 
   return (
     <div className="fondo">
-      <div className="w-50">
-        <h2 className="text-white text-center">Regitro de usuario</h2>
+      <div className="register-user-container mx-auto ">
+        <h2 className="text-dark text-center fw-bold pb-2">Registro de Paciente</h2>
         <RegisterForm
-          text="Nombres:"
+          text={<span className="text-dark">Nombres:</span>}
           type="text"
           placeholder="Nombres"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <RegisterForm
-          text="Apellidos:"
+          text={<span className="text-dark">Apellidos:</span>}
           type="text"
           placeholder="Apellidos"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
         />
         <RegisterForm
-          text="Dirección:"
+          text={<span className="text-dark">Dirección:</span>}
           type="text"
           placeholder="Dirección"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
         <RegisterForm
-          text="Teléfono:"
+          text={<span className="text-dark">Teléfono:</span>}
           type="text"
           placeholder="Teléfono"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
-        <div style={{ marginLeft: "15px" }}>
+        <div className="form-group-email">
           <RegisterForm
-            text="Correo:"
+            text={<span className="text-dark">Correo:</span>}
             type="text"
             placeholder="Correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        <div
-          className="d-flex justify-content-start align-items-center mb-3"
-          style={{ marginLeft: "15px" }}
-        >
-          <p className="text-white fw-bold mb-0 me-3">Genero:</p>
+        <div className="d-flex justify-content-start align-items-center mb-3 form-group-gender">
+          <p className="text-dark fw-bold mb-0 me-3">Género:</p>
           <select
-            className="form-select"
+            className="form-select text-dark"
             aria-label="Default select example"
             onChange={(e) => setGender(e.target.value)}
           >
-            <option selected>Genero</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
+            <option className="text-dark" defaultValue>Genero</option>
+            <option className="text-dark" value="M">Masculino</option>
+            <option className="text-dark" value="F">Femenino</option>
           </select>
         </div>
-        <div
-          className="d-flex justify-content-start align-items-center mb-3"
-          style={{ marginLeft: "45px" }}
-        >
-          <p className="text-white fw-bold mb-0 me-3">Rol:</p>
-          <select
-            className="form-select"
-            aria-label="Default select example"
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option selected>Rol</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Usuario">Usuario</option>
-          </select>
-        </div>
-        <div className="d-flex">
-          <div className="flex-grow-1 me-2">
-            <RegisterForm
-              text="Contraseña:"
+        <RegisterForm
+          text={<span className="text-dark">Fecha de nacimiento:</span>}
+          type="date"
+          value={fechaNacimiento}
+          onChange={(e) => setFechaNacimiento(e.target.value)}
+          max={new Date().toISOString().split("T")[0]} // <-- No permite fechas futuras
+        />
+        <div className="form-group-password mb-3 d-flex align-items-center justify-content-between">
+          <label className="fw-bold text-dark mb-1" htmlFor="passwordInput">
+            Contraseña:
+          </label>
+          <div className="input-group w-75">
+            <input
+              id="passwordInput"
+              className="form-control "
               type={showPassword ? "text" : "password"}
               placeholder="contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              style={{ borderRight: "none" }}
             />
+            <span
+              className="input-group-text bg-white"
+              style={{ cursor: "pointer", borderLeft: "none" }}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <i className="bi bi-eye-slash-fill fs-5 text-dark"></i>
+              ) : (
+                <i className="bi bi-eye-fill fs-5 text-dark"></i>
+              )}
+            </span>
           </div>
-          <span
-            onClick={() => setShowPassword(!showPassword)}
-            style={{ cursor: "pointer" }}
-          >
-            {showPassword ? (
-              <i className="bi bi-eye-slash-fill fs-4 text-white"></i>
-            ) : (
-              <i className="bi bi-eye-fill fs-4 text-white"></i>
-            )}
-          </span>
         </div>
-        <section className="d-flex justify-content-center mt-3">
+        <section className="d-flex justify-content-center mt-3 flex-wrap gap-2">
           <div
             className="position-relative d-inline-block"
             onMouseEnter={() => setHoverDisabled(true)}
@@ -218,8 +230,7 @@ const RegisterUser = () => {
                 !phone ||
                 !email ||
                 !password ||
-                !gender ||
-                !role
+                !gender
               }
               onClick={handleRegister}
             >
@@ -235,7 +246,9 @@ const RegisterUser = () => {
             )}
           </div>
           <Link to="/">
-            <button className="btn btn-primary fw-bold px-4">Regresar</button>
+            <button className="btn btn-primary fw-bold px-4 mt-2 mt-md-0">
+              Regresar
+            </button>
           </Link>
         </section>
       </div>

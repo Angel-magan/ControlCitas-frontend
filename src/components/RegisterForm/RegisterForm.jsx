@@ -1,6 +1,6 @@
 import React from "react";
 
-const RegisterForm = ({ text, type, placeholder, value, onChange }) => {
+const RegisterForm = ({ text, type, placeholder, value, onChange, ...rest }) => {
   return (
     <div>
       <div className="d-flex align-items-center">
@@ -14,6 +14,7 @@ const RegisterForm = ({ text, type, placeholder, value, onChange }) => {
             placeholder={`${placeholder}`}
             value={value}
             onChange={onChange}
+            {...rest}
           />
         </div>
       </div>

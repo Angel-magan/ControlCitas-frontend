@@ -26,14 +26,53 @@ const RegistrarMedico = () => {
             .catch(() => setEspecialidades([]));
     }, []);
 
+    // Submáscara DUI: solo permite 8 dígitos, un guion y 1 dígito
+    const handleDUIChange = (e) => {
+        let value = e.target.value.replace(/[^\d-]/g, "");
+        // Si el usuario escribe 9 dígitos seguidos, inserta el guion automáticamente
+        if (/^\d{9}$/.test(value)) {
+            value = value.slice(0, 8) + "-" + value.slice(8);
+        }
+        // Solo permite el formato 8 dígitos, guion, 1 dígito
+        if (value.length > 10) value = value.slice(0, 10);
+        setForm({ ...form, num_identificacion: value });
+    };
+
+    // Submáscara Licencia Médica: solo permite 5 dígitos
+    const handleLicenciaChange = (e) => {
+        let value = e.target.value.replace(/\D/g, "");
+        if (value.length > 5) value = value.slice(0, 5);
+        setForm({ ...form, licencia_medica: value });
+    };
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validación de formato DUI
+        if (!/^\d{8}-\d$/.test(form.num_identificacion)) {
+            Swal.fire("Error", "El DUI debe tener el formato 00000000-0", "error");
+            return;
+        }
+        // Validación de formato Licencia Médica (solo los 5 números)
+        if (!/^\d{5}$/.test(form.licencia_medica)) {
+            Swal.fire("Error", "La Licencia Médica debe tener el formato J.V.P.M-00000", "error");
+            return;
+        }
+
+        // Concatenar el prefijo antes de enviar
+        const dataToSend = {
+            ...form,
+            licencia_medica: `J.V.P.M-${form.licencia_medica}`
+        };
+
         try {
-            await axios.post("http://localhost:5000/api/admin/registrar-medico", form);
+            console.log(dataToSend);
+            await axios.post("http://localhost:5000/api/admin/registrar-medico", dataToSend);
+            
             Swal.fire("¡Éxito!", "Médico registrado exitosamente y correo enviado.", "success");
             setForm({
                 nombres: "",
@@ -47,7 +86,13 @@ const RegistrarMedico = () => {
                 id_especialidad: ""
             });
         } catch (err) {
-            Swal.fire("Error", err.response?.data?.message || "Error al registrar médico", "error");
+            if (err.response?.data?.message?.includes("DUI")) {
+                Swal.fire("Error", "El DUI ya está registrado.", "error");
+            } else if (err.response?.data?.message?.includes("licencia")) {
+                Swal.fire("Error", "La Licencia Médica ya está registrada.", "error");
+            } else {
+                Swal.fire("Error", err.response?.data?.message || "Error al registrar médico", "error");
+            }
         }
     };
 
@@ -106,7 +151,7 @@ const RegistrarMedico = () => {
                     </div>
                     <div className="col-md-6">
                         <label className="form-label">Teléfono</label>
-                        <input type="text" className="form-control" name="telefono" value={form.telefono} onChange={handleChange} required />
+                        <input type="number" className="form-control" name="telefono" value={form.telefono} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6">
                         <label className="form-label">Correo</label>
@@ -122,11 +167,33 @@ const RegistrarMedico = () => {
                     </div>
                     <div className="col-md-6">
                         <label className="form-label">DUI</label>
-                        <input type="text" className="form-control" name="num_identificacion" value={form.num_identificacion} onChange={handleChange} required />
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="num_identificacion"
+                            value={form.num_identificacion}
+                            onChange={handleDUIChange}
+                            required
+                            placeholder="00000000-0"
+                            maxLength={10}
+                        />
                     </div>
                     <div className="col-md-6">
                         <label className="form-label">Licencia Médica</label>
-                        <input type="text" className="form-control" name="licencia_medica" value={form.licencia_medica} onChange={handleChange} required />
+                        <div className="input-group">
+                            <span className="input-group-text">J.V.P.M-</span>
+                            <input
+                                type="text"
+                                className="form-control"
+                                name="licencia_medica"
+                                value={form.licencia_medica}
+                                onChange={handleLicenciaChange}
+                                required
+                                placeholder="00000"
+                                maxLength={5}
+                                inputMode="numeric"
+                            />
+                        </div>
                     </div>
                     <div className="col-md-6">
                         <label className="form-label">Especialidad</label>

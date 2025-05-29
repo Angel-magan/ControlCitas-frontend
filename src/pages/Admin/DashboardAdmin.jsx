@@ -10,6 +10,8 @@ import logo from "../../assets/logo_clinica_blanco.png";
 const DashboardAdmin = () => {
 	const [mostrarReportes, setMostrarReportes] = useState(false);
 
+
+
 	return (
 		<div
 			className="d-flex flex-column align-items-center justify-content-center"

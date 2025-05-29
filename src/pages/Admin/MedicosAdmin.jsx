@@ -41,8 +41,7 @@ const MedicosAdmin = () => {
       .then(() => {
         Swal.fire(
           "Actualizado",
-          `El médico ha sido ${
-            nuevoEstado === 1 ? "activado" : "desactivado"
+          `El médico ha sido ${nuevoEstado === 1 ? "activado" : "desactivado"
           } correctamente.`,
           "success"
         );
@@ -58,7 +57,14 @@ const MedicosAdmin = () => {
   };
 
   const handleEditClick = (medico) => {
-    setMedicoEdit({ ...medico });
+    // Buscar el id_especialidad a partir del nombre
+    const especialidadObj = especialidades.find(
+      (esp) => esp.nombre === medico.especialidad
+    );
+    setMedicoEdit({
+      ...medico,
+      id_especialidad: especialidadObj ? especialidadObj.id_especialidad : ""
+    });
     setShowModal(true);
   };
 
@@ -224,11 +230,10 @@ const MedicosAdmin = () => {
                     </td>
                     <td>
                       <button
-                        className={`btn btn-sm ${
-                          medico.activo === 1
+                        className={`btn btn-sm ${medico.activo === 1
                             ? "btn-outline-danger"
                             : "btn-outline-success"
-                        }`}
+                          }`}
                         onClick={() =>
                           cambiarEstado(medico.id_medico, medico.activo)
                         }

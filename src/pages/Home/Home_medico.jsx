@@ -123,7 +123,7 @@ const Home_medico = () => {
               className="bi bi-folder2-open mb-3"
               style={{ fontSize: "2.2rem" }}
             ></i>
-            <span className="fs-5">Expediente</span>
+            <span className="fs-5">Expedientes</span>
           </button>
         </div>
       </div>

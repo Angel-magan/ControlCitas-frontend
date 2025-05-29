@@ -244,7 +244,7 @@ const NavbarApp = () => {
                 Mi Horario
               </Nav.Link>
               <Nav.Link as={NavLink} to="/medico/expediente" style={navLinkStyle}>
-                Expediente
+                Expedientes
               </Nav.Link>
             </Nav>
             <Nav className="ms-auto">{userDropdown}</Nav>

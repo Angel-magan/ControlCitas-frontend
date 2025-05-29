@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2"; // <-- Agrega esta línea
 
 const AgendarCita = () => {
   const [especialidades, setEspecialidades] = useState([]);
@@ -114,7 +115,11 @@ const AgendarCita = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.hora) {
-      setMensaje("Por favor, selecciona una hora disponible.");
+      Swal.fire({
+        icon: "warning",
+        title: "Hora requerida",
+        text: "Por favor, selecciona una hora disponible.",
+      });
       return;
     }
     try {
@@ -127,7 +132,13 @@ const AgendarCita = () => {
         hora_cita: form.hora,
         motivo: form.motivo,
       });
-      setMensaje("¡Cita agendada exitosamente!");
+      Swal.fire({
+        icon: "success",
+        title: "¡Cita agendada!",
+        text: "Tu cita ha sido agendada exitosamente.",
+        timer: 2500,
+        showConfirmButton: false,
+      });
       setForm({
         especialidad: "",
         medico: "",
@@ -136,7 +147,11 @@ const AgendarCita = () => {
         motivo: "",
       });
     } catch (err) {
-      setMensaje(err.response?.data?.error || "Error al agendar cita");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.error || "Error al agendar cita",
+      });
     }
   };
 

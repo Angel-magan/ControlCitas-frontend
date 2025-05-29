@@ -14,17 +14,20 @@ const MedicosAdmin = () => {
   const [filtroEstado, setFiltroEstado] = useState("");
   const navigate = useNavigate();
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     fetchMedicos();
     axios
-      .get("http://localhost:5000/api/admin/especialidades")
+      .get(`${apiUrl}/api/admin/especialidades`)
       .then((res) => setEspecialidades(res.data))
       .catch(() => setEspecialidades([]));
   }, []);
 
   const fetchMedicos = () => {
     axios
-      .get("http://localhost:5000/api/admin/medicos")
+      .get(`${apiUrl}/api/admin/medicos`)
       .then((res) => setMedicos(res.data))
       .catch(() => setMedicos([]));
   };
@@ -32,17 +35,25 @@ const MedicosAdmin = () => {
   const cambiarEstado = (id_medico, estadoActual) => {
     const nuevoEstado = estadoActual === 1 ? 0 : 1;
     axios
-      .put(`http://localhost:5000/api/admin/medicos/${id_medico}/estado`, { activo: nuevoEstado })
+      .put(`${apiUrl}/api/admin/medicos/${id_medico}/estado`, {
+        activo: nuevoEstado,
+      })
       .then(() => {
         Swal.fire(
           "Actualizado",
-          `El médico ha sido ${nuevoEstado === 1 ? "activado" : "desactivado"} correctamente.`,
+          `El médico ha sido ${
+            nuevoEstado === 1 ? "activado" : "desactivado"
+          } correctamente.`,
           "success"
         );
         fetchMedicos();
       })
       .catch(() => {
-        Swal.fire("Error", "No se pudo actualizar el estado del médico.", "error");
+        Swal.fire(
+          "Error",
+          "No se pudo actualizar el estado del médico.",
+          "error"
+        );
       });
   };
 
@@ -58,15 +69,12 @@ const MedicosAdmin = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(
-        `http://localhost:5000/api/admin/medicos/${medicoEdit.id_medico}`,
-        {
-          id_especialidad: medicoEdit.id_especialidad,
-          licencia_medica: medicoEdit.licencia_medica,
-          num_identificacion: medicoEdit.num_identificacion,
-          activo: medicoEdit.activo,
-        }
-      );
+      await axios.put(`${apiUrl}/api/admin/medicos/${medicoEdit.id_medico}`, {
+        id_especialidad: medicoEdit.id_especialidad,
+        licencia_medica: medicoEdit.licencia_medica,
+        num_identificacion: medicoEdit.num_identificacion,
+        activo: medicoEdit.activo,
+      });
       Swal.fire("¡Actualizado!", "Datos del médico actualizados.", "success");
       setShowModal(false);
       fetchMedicos();
@@ -88,7 +96,9 @@ const MedicosAdmin = () => {
       filtroEspecialidad === "" || medico.especialidad === filtroEspecialidad;
     const coincideEstado =
       filtroEstado === "" || medico.activo.toString() === filtroEstado;
-    return coincideNombre && coincideId && coincideEspecialidad && coincideEstado;
+    return (
+      coincideNombre && coincideId && coincideEspecialidad && coincideEstado
+    );
   });
 
   return (
@@ -168,7 +178,10 @@ const MedicosAdmin = () => {
           </div>
         </div>
 
-        <div className="table-responsive shadow rounded" style={{ background: "#fff" }}>
+        <div
+          className="table-responsive shadow rounded"
+          style={{ background: "#fff" }}
+        >
           <table className="table table-hover align-middle mb-0">
             <thead style={{ background: "#e3eafc" }}>
               <tr>
@@ -211,8 +224,14 @@ const MedicosAdmin = () => {
                     </td>
                     <td>
                       <button
-                        className={`btn btn-sm ${medico.activo === 1 ? "btn-outline-danger" : "btn-outline-success"}`}
-                        onClick={() => cambiarEstado(medico.id_medico, medico.activo)}
+                        className={`btn btn-sm ${
+                          medico.activo === 1
+                            ? "btn-outline-danger"
+                            : "btn-outline-success"
+                        }`}
+                        onClick={() =>
+                          cambiarEstado(medico.id_medico, medico.activo)
+                        }
                         style={{ minWidth: "90px", marginRight: "6px" }}
                       >
                         {medico.activo === 1 ? "Desactivar" : "Activar"}
@@ -266,7 +285,10 @@ const MedicosAdmin = () => {
                     >
                       <option value="">Seleccione...</option>
                       {especialidades.map((esp) => (
-                        <option key={esp.id_especialidad} value={esp.id_especialidad}>
+                        <option
+                          key={esp.id_especialidad}
+                          value={esp.id_especialidad}
+                        >
                           {esp.nombre}
                         </option>
                       ))}

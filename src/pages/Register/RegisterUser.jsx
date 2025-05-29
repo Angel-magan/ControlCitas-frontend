@@ -19,6 +19,7 @@ const RegisterUser = () => {
   const [hoverDisabled, setHoverDisabled] = useState(false);
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_API_URL; // <-- Agrega esta línea
 
   //Para ingresar el usuario
   const handleRegister = () => {
@@ -42,15 +43,7 @@ const RegisterUser = () => {
       }
     }
 
-    if (
-      name &&
-      lastName &&
-      address &&
-      phone &&
-      email &&
-      password &&
-      gender
-    ) {
+    if (name && lastName && address && phone && email && password && gender) {
       // Verificar si el correo tiene un formato válido
       if (!emailRegex.test(email)) {
         Swal.fire({
@@ -64,7 +57,8 @@ const RegisterUser = () => {
       }
       // Hacer la solicitud al backend para registrar el usuario
       axios
-        .post("http://localhost:5000/api/usuarios/registrarUsuario", {
+        .post(`${apiUrl}/api/usuarios/registrarUsuario`, {
+          // <-- Usa la variable aquí
           nombres: name,
           apellidos: lastName,
           direccion: address,
@@ -130,7 +124,9 @@ const RegisterUser = () => {
   return (
     <div className="fondo">
       <div className="register-user-container mx-auto ">
-        <h2 className="text-dark text-center fw-bold pb-2">Registro de Paciente</h2>
+        <h2 className="text-dark text-center fw-bold pb-2">
+          Registro de Paciente
+        </h2>
         <RegisterForm
           text={<span className="text-dark">Nombres:</span>}
           type="text"
@@ -175,9 +171,15 @@ const RegisterUser = () => {
             aria-label="Default select example"
             onChange={(e) => setGender(e.target.value)}
           >
-            <option className="text-dark" defaultValue>Genero</option>
-            <option className="text-dark" value="M">Masculino</option>
-            <option className="text-dark" value="F">Femenino</option>
+            <option className="text-dark" defaultValue>
+              Genero
+            </option>
+            <option className="text-dark" value="M">
+              Masculino
+            </option>
+            <option className="text-dark" value="F">
+              Femenino
+            </option>
           </select>
         </div>
         <RegisterForm

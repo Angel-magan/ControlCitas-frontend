@@ -16,6 +16,9 @@ const ContactosPaciente = () => {
 
   const paciente = JSON.parse(localStorage.getItem("paciente"));
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     cargarContactos();
     // eslint-disable-next-line
@@ -24,7 +27,7 @@ const ContactosPaciente = () => {
   const cargarContactos = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/pacientes/contactos", {
+      const res = await axios.get(`${apiUrl}/api/pacientes/contactos`, {
         params: { id_paciente: paciente.id_paciente },
       });
       setContactos(res.data);
@@ -42,11 +45,15 @@ const ContactosPaciente = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/pacientes/contactos", {
+      await axios.post(`${apiUrl}/api/pacientes/contactos`, {
         ...form,
         id_paciente: paciente.id_paciente,
       });
-      Swal.fire("Contacto agregado", "El contacto fue agregado correctamente", "success");
+      Swal.fire(
+        "Contacto agregado",
+        "El contacto fue agregado correctamente",
+        "success"
+      );
       setForm({
         nombre: "",
         apellido: "",
@@ -72,7 +79,7 @@ const ContactosPaciente = () => {
     });
     if (confirm.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/pacientes/contactos/${id_contacto}`);
+        await axios.delete(`${apiUrl}/api/pacientes/contactos/${id_contacto}`);
         Swal.fire("Contacto eliminado", "", "success");
         cargarContactos();
       } catch {
@@ -87,7 +94,9 @@ const ContactosPaciente = () => {
         Mis Contactos
       </h2>
       <div className="alert alert-warning" style={{ fontSize: "1rem" }}>
-        <b>Nota:</b> Estos son tus <b>contactos de emergencia</b>. El médico o el personal de la clínica podrá comunicarse con ellos en caso de cualquier emergencia relacionada con tu salud.
+        <b>Nota:</b> Estos son tus <b>contactos de emergencia</b>. El médico o
+        el personal de la clínica podrá comunicarse con ellos en caso de
+        cualquier emergencia relacionada con tu salud.
       </div>
       <form className="row g-2 mb-4" onSubmit={handleSubmit}>
         <div className="col-md-4">

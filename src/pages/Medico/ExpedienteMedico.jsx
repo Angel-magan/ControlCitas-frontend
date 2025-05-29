@@ -9,6 +9,9 @@ const ExpedienteMedico = () => {
   const [loading, setLoading] = useState(false);
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     cargarPacientes();
   }, []);
@@ -16,8 +19,8 @@ const ExpedienteMedico = () => {
   const cargarPacientes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/buscar-pacientes", {
-        params: { q: "" }
+      const res = await axios.get(`${apiUrl}/api/admin/buscar-pacientes`, {
+        params: { q: "" },
       });
       setPacientes(res.data);
     } catch {
@@ -32,8 +35,8 @@ const ExpedienteMedico = () => {
     setLoading(true);
     setPacienteSeleccionado(null); // <-- Limpia el paciente seleccionado al buscar
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/buscar-pacientes", {
-        params: { q: busqueda }
+      const res = await axios.get(`${apiUrl}/api/admin/buscar-pacientes`, {
+        params: { q: busqueda },
       });
       setPacientes(res.data);
     } catch {
@@ -41,15 +44,6 @@ const ExpedienteMedico = () => {
       Swal.fire("Error al buscar pacientes", "", "error");
     }
     setLoading(false);
-  };
-
-  const formatearFecha = (fechaStr) => {
-    if (!fechaStr) return "";
-    const fecha = new Date(fechaStr);
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = fecha.getFullYear();
-    return `${dia}/${mes}/${anio}`;
   };
 
   return (
@@ -69,7 +63,10 @@ const ExpedienteMedico = () => {
           />
         </div>
         <div className="col-md-2">
-          <button className="btn btn-primary fw-bold" style={{ background: "#2e5da1" }}>
+          <button
+            className="btn btn-primary fw-bold"
+            style={{ background: "#2e5da1" }}
+          >
             Buscar
           </button>
         </div>
@@ -81,15 +78,26 @@ const ExpedienteMedico = () => {
           {pacientes.map((p) => (
             <button
               key={p.id_paciente}
-              className={`list-group-item list-group-item-action${pacienteSeleccionado?.id_paciente === p.id_paciente ? " active" : ""}`}
+              className={`list-group-item list-group-item-action${
+                pacienteSeleccionado?.id_paciente === p.id_paciente
+                  ? " active"
+                  : ""
+              }`}
               onClick={() => setPacienteSeleccionado(p)}
             >
               <div>
                 <b>ID:</b> {p.id_paciente} <br />
                 <b>Nombre:</b> {p.nombres} {p.apellidos} <br />
                 <b>Correo:</b> {p.correo} <br />
-                <b>Teléfono:</b> {p.telefono || <span className="text-muted">No registrado</span>} <br />
-                <b>Dirección:</b> {p.direccion || <span className="text-muted">No registrada</span>}
+                <b>Teléfono:</b>{" "}
+                {p.telefono || (
+                  <span className="text-muted">No registrado</span>
+                )}{" "}
+                <br />
+                <b>Dirección:</b>{" "}
+                {p.direccion || (
+                  <span className="text-muted">No registrada</span>
+                )}
               </div>
             </button>
           ))}

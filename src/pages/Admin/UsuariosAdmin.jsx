@@ -22,13 +22,16 @@ const UsuariosAdmin = () => {
   const [busquedaId, setBusquedaId] = useState("");
   const [filtroRol, setFiltroRol] = useState("todos");
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     fetchUsuarios();
   }, []);
 
   const fetchUsuarios = () => {
     axios
-      .get("http://localhost:5000/api/admin/usuarios")
+      .get(`${apiUrl}/api/admin/usuarios`)
       .then((res) => setUsuarios(res.data))
       .catch(() => setUsuarios([]));
   };
@@ -43,8 +46,7 @@ const UsuariosAdmin = () => {
     const coincideId =
       busquedaId.trim() === "" ||
       usuario.id_usuario.toString() === busquedaId.trim();
-    const coincideRol =
-      filtroRol === "todos" || usuario.rol === filtroRol;
+    const coincideRol = filtroRol === "todos" || usuario.rol === filtroRol;
     return coincideBusqueda && coincideId && coincideRol;
   });
 
@@ -61,22 +63,30 @@ const UsuariosAdmin = () => {
       !form.rol.trim() ||
       (!editId && !form.contrasena.trim())
     ) {
-      Swal.fire("Error", "Por favor completa los campos obligatorios.", "error");
+      Swal.fire(
+        "Error",
+        "Por favor completa los campos obligatorios.",
+        "error"
+      );
       return;
     }
     try {
       if (editId) {
         // Editar usuario (sin contraseña ni rol)
         const { contrasena, rol, ...editData } = form;
-        await axios.put(`http://localhost:5000/api/admin/usuarios/${editId}`, editData);
+        await axios.put(`${apiUrl}/api/admin/usuarios/${editId}`, editData);
         Swal.fire("¡Actualizado!", "Usuario actualizado.", "success");
       } else {
         // Crear solo usuario admin
         if (form.rol !== "admin") {
-          Swal.fire("Error", "Solo puedes crear usuarios con rol admin.", "error");
+          Swal.fire(
+            "Error",
+            "Solo puedes crear usuarios con rol admin.",
+            "error"
+          );
           return;
         }
-        await axios.post("http://localhost:5000/api/admin/usuarios", form);
+        await axios.post(`${apiUrl}/api/admin/usuarios`, form);
         Swal.fire("¡Agregado!", "Usuario admin registrado.", "success");
       }
       setForm({
@@ -92,7 +102,11 @@ const UsuariosAdmin = () => {
       setEditId(null);
       fetchUsuarios();
     } catch (err) {
-      Swal.fire("Error", err.response?.data?.message || "No se pudo guardar", "error");
+      Swal.fire(
+        "Error",
+        err.response?.data?.message || "No se pudo guardar",
+        "error"
+      );
     }
   };
 
@@ -112,7 +126,11 @@ const UsuariosAdmin = () => {
 
   const handleDelete = async (id, rol) => {
     if (rol !== "admin") {
-      Swal.fire("Acción no permitida", "Solo puedes eliminar usuarios admin.", "warning");
+      Swal.fire(
+        "Acción no permitida",
+        "Solo puedes eliminar usuarios admin.",
+        "warning"
+      );
       return;
     }
     Swal.fire({
@@ -125,7 +143,7 @@ const UsuariosAdmin = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/api/admin/usuarios/${id}`);
+          await axios.delete(`${apiUrl}/api/admin/usuarios/${id}`);
           Swal.fire("Eliminado", "Usuario eliminado.", "success");
           fetchUsuarios();
         } catch (err) {
@@ -179,12 +197,14 @@ const UsuariosAdmin = () => {
         {/* Buscador y filtros */}
         <form className="row g-2 mb-4 align-items-end">
           <div className="col-md-4">
-            <label className="form-label">Buscar por nombre, apellido o correo</label>
+            <label className="form-label">
+              Buscar por nombre, apellido o correo
+            </label>
             <input
               type="text"
               className="form-control"
               value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
+              onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Ej: Juan, Pérez, correo@correo.com"
             />
           </div>
@@ -194,7 +214,7 @@ const UsuariosAdmin = () => {
               type="number"
               className="form-control"
               value={busquedaId}
-              onChange={e => setBusquedaId(e.target.value)}
+              onChange={(e) => setBusquedaId(e.target.value)}
               placeholder="ID usuario"
             />
           </div>
@@ -203,7 +223,7 @@ const UsuariosAdmin = () => {
             <select
               className="form-select"
               value={filtroRol}
-              onChange={e => setFiltroRol(e.target.value)}
+              onChange={(e) => setFiltroRol(e.target.value)}
             >
               <option value="todos">Todos</option>
               <option value="admin">Admin</option>
@@ -401,7 +421,9 @@ const UsuariosAdmin = () => {
                       {usuario.rol === "admin" && (
                         <button
                           className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(usuario.id_usuario, usuario.rol)}
+                          onClick={() =>
+                            handleDelete(usuario.id_usuario, usuario.rol)
+                          }
                         >
                           Eliminar
                         </button>

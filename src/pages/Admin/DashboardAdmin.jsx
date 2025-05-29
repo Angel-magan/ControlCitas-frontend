@@ -39,13 +39,18 @@ const DashboardAdmin = () => {
   const [pdfPreview, setPdfPreview] = useState(null);
   const iframeRef = useRef();
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   // Cargar médicos y pacientes al inicio
   useEffect(() => {
-    axios.get("http://localhost:5000/api/admin/medicos")
-      .then(res => setMedicos(res.data))
+    axios
+      .get(`${apiUrl}/api/admin/medicos`)
+      .then((res) => setMedicos(res.data))
       .catch(() => setMedicos([]));
-    axios.get("http://localhost:5000/api/admin/pacientes")
-      .then(res => setPacientes(res.data))
+    axios
+      .get(`${apiUrl}/api/admin/pacientes`)
+      .then((res) => setPacientes(res.data))
       .catch(() => setPacientes([]));
   }, []);
 
@@ -70,13 +75,17 @@ const DashboardAdmin = () => {
       return;
     }
     if (fechaInicio > fechaFin) {
-      Swal.fire("Error", "La fecha de inicio no puede ser posterior a la fecha de fin.", "error");
+      Swal.fire(
+        "Error",
+        "La fecha de inicio no puede ser posterior a la fecha de fin.",
+        "error"
+      );
       return;
     }
     setReporteCitasLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/reporte-citas-fecha", {
-        params: { fechaInicio, fechaFin }
+      const res = await axios.get(`${apiUrl}/api/admin/reporte-citas-fecha`, {
+        params: { fechaInicio, fechaFin },
       });
       setReporteCitas(res.data);
     } catch {
@@ -105,13 +114,13 @@ const DashboardAdmin = () => {
     autoTable(doc, {
       startY: 38,
       head: [["Paciente", "Médico", "Especialidad", "Fecha", "Hora", "Estado"]],
-      body: reporteCitas.map(c => [
+      body: reporteCitas.map((c) => [
         c.paciente,
         c.medico,
         c.especialidad,
         c.fecha,
         c.hora,
-        c.estado
+        c.estado,
       ]),
     });
     if (preview) return doc;
@@ -125,17 +134,21 @@ const DashboardAdmin = () => {
       return;
     }
     if (fechaInicioMedico > fechaFinMedico) {
-      Swal.fire("Error", "La fecha de inicio no puede ser posterior a la fecha de fin.", "error");
+      Swal.fire(
+        "Error",
+        "La fecha de inicio no puede ser posterior a la fecha de fin.",
+        "error"
+      );
       return;
     }
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/reporte-citas-medico", {
+      const res = await axios.get(`${apiUrl}/api/admin/reporte-citas-medico`, {
         params: {
           id_medico: medicoSeleccionado,
           fechaInicio: fechaInicioMedico,
           fechaFin: fechaFinMedico,
-          desglose: mostrarDesglose ? 1 : 0
-        }
+          desglose: mostrarDesglose ? 1 : 0,
+        },
       });
       setReporteMedico(res.data.citas || []);
       setReporteMedicoResumen(res.data.resumen || null);
@@ -146,7 +159,9 @@ const DashboardAdmin = () => {
   };
 
   const exportarMedicoPDF = (preview = false) => {
-    const medico = medicos.find(m => m.id_medico === parseInt(medicoSeleccionado));
+    const medico = medicos.find(
+      (m) => m.id_medico === parseInt(medicoSeleccionado)
+    );
     const doc = new jsPDF();
     doc.addImage(logo, "PNG", 10, 8, 18, 18);
     doc.setFontSize(16);
@@ -156,19 +171,18 @@ const DashboardAdmin = () => {
     doc.text(`Rango: ${fechaInicioMedico} a ${fechaFinMedico}`, 32, 32);
     doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, 32, 38);
     if (reporteMedicoResumen) {
-      doc.text(`Atendidas: ${reporteMedicoResumen.atendidas}  Canceladas: ${reporteMedicoResumen.canceladas}  Pendientes: ${reporteMedicoResumen.pendientes}`, 14, 46);
+      doc.text(
+        `Atendidas: ${reporteMedicoResumen.atendidas}  Canceladas: ${reporteMedicoResumen.canceladas}  Pendientes: ${reporteMedicoResumen.pendientes}`,
+        14,
+        46
+      );
     }
     let startY = 52;
     if (mostrarDesglose && reporteMedico.length > 0) {
       autoTable(doc, {
         startY,
         head: [["Fecha", "Hora", "Paciente", "Estado"]],
-        body: reporteMedico.map(c => [
-          c.fecha,
-          c.hora,
-          c.paciente,
-          c.estado
-        ]),
+        body: reporteMedico.map((c) => [c.fecha, c.hora, c.paciente, c.estado]),
       });
     }
     if (preview) return doc;
@@ -182,13 +196,20 @@ const DashboardAdmin = () => {
       return;
     }
     if (fechaInicioEsp > fechaFinEsp) {
-      Swal.fire("Error", "La fecha de inicio no puede ser posterior a la fecha de fin.", "error");
+      Swal.fire(
+        "Error",
+        "La fecha de inicio no puede ser posterior a la fecha de fin.",
+        "error"
+      );
       return;
     }
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/reporte-citas-especialidad", {
-        params: { fechaInicio: fechaInicioEsp, fechaFin: fechaFinEsp }
-      });
+      const res = await axios.get(
+        `${apiUrl}/api/admin/reporte-citas-especialidad`,
+        {
+          params: { fechaInicio: fechaInicioEsp, fechaFin: fechaFinEsp },
+        }
+      );
       setReporteEspecialidad(res.data.tabla || []);
       setGraficoData(res.data.grafico || []);
     } catch {
@@ -208,10 +229,10 @@ const DashboardAdmin = () => {
     autoTable(doc, {
       startY: 38,
       head: [["Especialidad", "Total Citas", "Porcentaje"]],
-      body: reporteEspecialidad.map(e => [
+      body: reporteEspecialidad.map((e) => [
         e.especialidad,
         e.total,
-        `${e.porcentaje}%`
+        `${e.porcentaje}%`,
       ]),
     });
     if (preview) return doc;
@@ -226,8 +247,8 @@ const DashboardAdmin = () => {
       return;
     }
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/buscar-pacientes", {
-        params: { q: valor }
+      const res = await axios.get(`${apiUrl}/api/admin/buscar-pacientes`, {
+        params: { q: valor },
       });
       setPacientes(res.data);
     } catch {
@@ -241,13 +262,16 @@ const DashboardAdmin = () => {
       return;
     }
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/historial-citas-paciente", {
-        params: {
-          id_paciente: pacienteSeleccionado,
-          orden: ordenHistorial,
-          estado: filtroEstado
+      const res = await axios.get(
+        `${apiUrl}/api/admin/historial-citas-paciente`,
+        {
+          params: {
+            id_paciente: pacienteSeleccionado,
+            orden: ordenHistorial,
+            estado: filtroEstado,
+          },
         }
-      });
+      );
       setHistorialCitas(res.data);
     } catch {
       setHistorialCitas([]);
@@ -255,18 +279,26 @@ const DashboardAdmin = () => {
   };
 
   const exportarHistorialPDF = (preview = false) => {
-    const paciente = pacientes.find(p => p.id_paciente === parseInt(pacienteSeleccionado));
+    const paciente = pacientes.find(
+      (p) => p.id_paciente === parseInt(pacienteSeleccionado)
+    );
     const doc = new jsPDF();
     doc.addImage(logo, "PNG", 10, 8, 18, 18);
     doc.setFontSize(16);
     doc.text("Clínica Johnson - Historial de Citas de Paciente", 32, 18);
     doc.setFontSize(11);
-    doc.text(`Paciente: ${paciente?.nombres} ${paciente?.apellidos} (${paciente?.num_identificacion || ""})`, 32, 26);
+    doc.text(
+      `Paciente: ${paciente?.nombres} ${paciente?.apellidos} (${
+        paciente?.num_identificacion || ""
+      })`,
+      32,
+      26
+    );
     doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, 32, 32);
     autoTable(doc, {
       startY: 38,
       head: [["Fecha", "Hora", "Médico", "Especialidad", "Estado", "Motivo"]],
-      body: historialCitas.map(c => [
+      body: historialCitas.map((c) => [
         c.fecha_cita,
         c.hora_cita,
         c.medico,
@@ -274,13 +306,13 @@ const DashboardAdmin = () => {
         c.estado === 0
           ? "Pendiente"
           : c.estado === 1
-            ? "Finalizada"
-            : c.estado === 2
-              ? "Cancelada por paciente"
-              : c.estado === 3
-                ? "Cancelada por médico"
-                : c.estado,
-        c.motivo || ""
+          ? "Finalizada"
+          : c.estado === 2
+          ? "Cancelada por paciente"
+          : c.estado === 3
+          ? "Cancelada por médico"
+          : c.estado,
+        c.motivo || "",
       ]),
     });
     if (preview) return doc;
@@ -296,30 +328,36 @@ const DashboardAdmin = () => {
   // Gráfico de barras simple (HU14)
   const renderBarChart = () => {
     if (!graficoData.length) return null;
-    const max = Math.max(...graficoData.map(e => e.total));
+    const max = Math.max(...graficoData.map((e) => e.total));
     return (
       <div style={{ width: "100%", margin: "20px 0" }}>
         {graficoData.map((e, i) => (
           <div key={i} style={{ marginBottom: 8 }}>
             <div className="d-flex justify-content-between">
               <span style={{ fontWeight: 500 }}>{e.especialidad}</span>
-              <span>{e.total} ({e.porcentaje}%)</span>
+              <span>
+                {e.total} ({e.porcentaje}%)
+              </span>
             </div>
-            <div style={{
-              background: "#e3eafc",
-              borderRadius: 6,
-              height: 18,
-              width: "100%",
-              marginTop: 2,
-              marginBottom: 2,
-              overflow: "hidden"
-            }}>
-              <div style={{
-                background: "#2e5da1",
-                width: `${(e.total / max) * 100}%`,
-                height: "100%",
-                borderRadius: 6
-              }}></div>
+            <div
+              style={{
+                background: "#e3eafc",
+                borderRadius: 6,
+                height: 18,
+                width: "100%",
+                marginTop: 2,
+                marginBottom: 2,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  background: "#2e5da1",
+                  width: `${(e.total / max) * 100}%`,
+                  height: "100%",
+                  borderRadius: 6,
+                }}
+              ></div>
             </div>
           </div>
         ))}
@@ -343,12 +381,15 @@ const DashboardAdmin = () => {
         <div
           style={{
             position: "fixed",
-            top: 0, left: 0, right: 0, bottom: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             background: "rgba(0,0,0,0.4)",
             zIndex: 9999,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
           <div
@@ -359,7 +400,7 @@ const DashboardAdmin = () => {
               maxWidth: "90vw",
               maxHeight: "90vh",
               boxShadow: "0 4px 24px 0 rgba(46,93,161,0.15)",
-              position: "relative"
+              position: "relative",
             }}
           >
             <button
@@ -399,7 +440,17 @@ const DashboardAdmin = () => {
         }}
       >
         <div className="text-center mb-4">
-          <img src={logo} alt="Logo Clínica Johnson" style={{ height: 56, width: 56, borderRadius: "50%", background: "#2e5da1", padding: 8 }} />
+          <img
+            src={logo}
+            alt="Logo Clínica Johnson"
+            style={{
+              height: 56,
+              width: 56,
+              borderRadius: "50%",
+              background: "#2e5da1",
+              padding: 8,
+            }}
+          />
           <h2 className="fw-bold mt-3" style={{ color: "#2e5da1" }}>
             Dashboard de Administración
           </h2>
@@ -410,18 +461,38 @@ const DashboardAdmin = () => {
 
         {/* HU12 - Reporte de Citas por Fecha */}
         <section className="mb-5">
-          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>Reporte de Citas por Fecha</h4>
+          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>
+            Reporte de Citas por Fecha
+          </h4>
           <div className="row g-2 align-items-end mb-2">
             <div className="col-md-3">
               <label className="form-label">Fecha inicio</label>
-              <input type="date" className="form-control" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} />
+              <input
+                type="date"
+                className="form-control"
+                value={fechaInicio}
+                onChange={(e) => setFechaInicio(e.target.value)}
+              />
             </div>
             <div className="col-md-3">
               <label className="form-label">Fecha fin</label>
-              <input type="date" className="form-control" value={fechaFin} onChange={e => setFechaFin(e.target.value)} />
+              <input
+                type="date"
+                className="form-control"
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+              />
             </div>
             <div className="col-md-3">
-              <button className="btn btn-primary fw-bold" style={{ background: "#2e5da1", border: "none", borderRadius: 8 }} onClick={generarReporteCitas}>
+              <button
+                className="btn btn-primary fw-bold"
+                style={{
+                  background: "#2e5da1",
+                  border: "none",
+                  borderRadius: 8,
+                }}
+                onClick={generarReporteCitas}
+              >
                 Generar Reporte
               </button>
             </div>
@@ -436,7 +507,12 @@ const DashboardAdmin = () => {
                   </button>
                   <button
                     className="btn btn-outline-primary fw-bold"
-                    onClick={() => showPdfPreview(() => exportarCitasPDF(true), "reporte_citas.pdf")}
+                    onClick={() =>
+                      showPdfPreview(
+                        () => exportarCitasPDF(true),
+                        "reporte_citas.pdf"
+                      )
+                    }
                   >
                     Vista previa PDF
                   </button>
@@ -447,7 +523,9 @@ const DashboardAdmin = () => {
           {reporteCitasLoading ? (
             <div className="text-center text-secondary py-3">Cargando...</div>
           ) : reporteCitas.length === 0 ? (
-            <div className="text-center text-secondary py-3">No hay citas en el rango seleccionado.</div>
+            <div className="text-center text-secondary py-3">
+              No hay citas en el rango seleccionado.
+            </div>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
@@ -480,13 +558,19 @@ const DashboardAdmin = () => {
 
         {/* HU13 - Reporte de Citas por Médico */}
         <section className="mb-5">
-          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>Reporte de Citas por Médico</h4>
+          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>
+            Reporte de Citas por Médico
+          </h4>
           <div className="row g-2 align-items-end mb-2">
             <div className="col-md-4">
               <label className="form-label">Médico</label>
-              <select className="form-select" value={medicoSeleccionado} onChange={e => setMedicoSeleccionado(e.target.value)}>
+              <select
+                className="form-select"
+                value={medicoSeleccionado}
+                onChange={(e) => setMedicoSeleccionado(e.target.value)}
+              >
                 <option value="">Seleccione...</option>
-                {medicos.map(m => (
+                {medicos.map((m) => (
                   <option key={m.id_medico} value={m.id_medico}>
                     {m.nombres} {m.apellidos} - {m.especialidad}
                   </option>
@@ -495,18 +579,41 @@ const DashboardAdmin = () => {
             </div>
             <div className="col-md-2">
               <label className="form-label">Fecha inicio</label>
-              <input type="date" className="form-control" value={fechaInicioMedico} onChange={e => setFechaInicioMedico(e.target.value)} />
+              <input
+                type="date"
+                className="form-control"
+                value={fechaInicioMedico}
+                onChange={(e) => setFechaInicioMedico(e.target.value)}
+              />
             </div>
             <div className="col-md-2">
               <label className="form-label">Fecha fin</label>
-              <input type="date" className="form-control" value={fechaFinMedico} onChange={e => setFechaFinMedico(e.target.value)} />
+              <input
+                type="date"
+                className="form-control"
+                value={fechaFinMedico}
+                onChange={(e) => setFechaFinMedico(e.target.value)}
+              />
             </div>
             <div className="col-md-2">
               <label className="form-label">Desglose por fechas</label>
-              <input type="checkbox" className="form-check-input ms-2" checked={mostrarDesglose} onChange={e => setMostrarDesglose(e.target.checked)} />
+              <input
+                type="checkbox"
+                className="form-check-input ms-2"
+                checked={mostrarDesglose}
+                onChange={(e) => setMostrarDesglose(e.target.checked)}
+              />
             </div>
             <div className="col-md-2">
-              <button className="btn btn-primary fw-bold" style={{ background: "#2e5da1", border: "none", borderRadius: 8 }} onClick={generarReporteMedico}>
+              <button
+                className="btn btn-primary fw-bold"
+                style={{
+                  background: "#2e5da1",
+                  border: "none",
+                  borderRadius: 8,
+                }}
+                onClick={generarReporteMedico}
+              >
                 Generar Reporte
               </button>
               {reporteMedicoResumen && (
@@ -519,7 +626,12 @@ const DashboardAdmin = () => {
                   </button>
                   <button
                     className="btn btn-outline-primary fw-bold mt-2"
-                    onClick={() => showPdfPreview(() => exportarMedicoPDF(true), "reporte_citas_medico.pdf")}
+                    onClick={() =>
+                      showPdfPreview(
+                        () => exportarMedicoPDF(true),
+                        "reporte_citas_medico.pdf"
+                      )
+                    }
                   >
                     Vista previa PDF
                   </button>
@@ -559,24 +671,46 @@ const DashboardAdmin = () => {
             </div>
           )}
           {reporteMedicoResumen === null && (
-            <div className="text-center text-secondary py-3">No hay citas para este médico en el rango seleccionado.</div>
+            <div className="text-center text-secondary py-3">
+              No hay citas para este médico en el rango seleccionado.
+            </div>
           )}
         </section>
 
         {/* HU14 - Reporte de Citas por Especialidad */}
         <section className="mb-5">
-          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>Reporte de Citas por Especialidad</h4>
+          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>
+            Reporte de Citas por Especialidad
+          </h4>
           <div className="row g-2 align-items-end mb-2">
             <div className="col-md-3">
               <label className="form-label">Fecha inicio</label>
-              <input type="date" className="form-control" value={fechaInicioEsp} onChange={e => setFechaInicioEsp(e.target.value)} />
+              <input
+                type="date"
+                className="form-control"
+                value={fechaInicioEsp}
+                onChange={(e) => setFechaInicioEsp(e.target.value)}
+              />
             </div>
             <div className="col-md-3">
               <label className="form-label">Fecha fin</label>
-              <input type="date" className="form-control" value={fechaFinEsp} onChange={e => setFechaFinEsp(e.target.value)} />
+              <input
+                type="date"
+                className="form-control"
+                value={fechaFinEsp}
+                onChange={(e) => setFechaFinEsp(e.target.value)}
+              />
             </div>
             <div className="col-md-3">
-              <button className="btn btn-primary fw-bold" style={{ background: "#2e5da1", border: "none", borderRadius: 8 }} onClick={generarReporteEspecialidad}>
+              <button
+                className="btn btn-primary fw-bold"
+                style={{
+                  background: "#2e5da1",
+                  border: "none",
+                  borderRadius: 8,
+                }}
+                onClick={generarReporteEspecialidad}
+              >
                 Generar Reporte
               </button>
             </div>
@@ -591,7 +725,12 @@ const DashboardAdmin = () => {
                   </button>
                   <button
                     className="btn btn-outline-primary fw-bold"
-                    onClick={() => showPdfPreview(() => exportarEspecialidadPDF(true), "reporte_citas_especialidad.pdf")}
+                    onClick={() =>
+                      showPdfPreview(
+                        () => exportarEspecialidadPDF(true),
+                        "reporte_citas_especialidad.pdf"
+                      )
+                    }
                   >
                     Vista previa PDF
                   </button>
@@ -600,7 +739,9 @@ const DashboardAdmin = () => {
             </div>
           </div>
           {reporteEspecialidad.length === 0 ? (
-            <div className="text-center text-secondary py-3">No hay citas en el rango seleccionado.</div>
+            <div className="text-center text-secondary py-3">
+              No hay citas en el rango seleccionado.
+            </div>
           ) : (
             <>
               <div className="table-responsive">
@@ -630,7 +771,9 @@ const DashboardAdmin = () => {
 
         {/* HU15 - Historial de Citas de Paciente */}
         <section>
-          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>Historial de Citas de Paciente</h4>
+          <h4 className="fw-bold" style={{ color: "#2e5da1" }}>
+            Historial de Citas de Paciente
+          </h4>
           <div className="row g-2 align-items-end mb-2">
             <div className="col-md-4">
               <label className="form-label">Buscar paciente</label>
@@ -639,18 +782,19 @@ const DashboardAdmin = () => {
                 className="form-control"
                 placeholder="Nombre, correo o documento"
                 value={busquedaPaciente}
-                onChange={e => buscarPacientes(e.target.value)}
+                onChange={(e) => buscarPacientes(e.target.value)}
               />
               {pacientes.length > 0 && (
                 <select
                   className="form-select mt-2"
                   value={pacienteSeleccionado}
-                  onChange={e => setPacienteSeleccionado(e.target.value)}
+                  onChange={(e) => setPacienteSeleccionado(e.target.value)}
                 >
                   <option value="">Seleccione paciente...</option>
-                  {pacientes.map(p => (
+                  {pacientes.map((p) => (
                     <option key={p.id_paciente} value={p.id_paciente}>
-                      {p.nombres} {p.apellidos} - {p.correo} - {p.num_identificacion}
+                      {p.nombres} {p.apellidos} - {p.correo} -{" "}
+                      {p.num_identificacion}
                     </option>
                   ))}
                 </select>
@@ -658,23 +802,41 @@ const DashboardAdmin = () => {
             </div>
             <div className="col-md-2">
               <label className="form-label">Orden</label>
-              <select className="form-select" value={ordenHistorial} onChange={e => setOrdenHistorial(e.target.value)}>
+              <select
+                className="form-select"
+                value={ordenHistorial}
+                onChange={(e) => setOrdenHistorial(e.target.value)}
+              >
                 <option value="asc">Más antiguas</option>
                 <option value="desc">Más recientes</option>
               </select>
             </div>
             <div className="col-md-2">
               <label className="form-label">Estado</label>
-              <select className="form-select" value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
+              <select
+                className="form-select"
+                value={filtroEstado}
+                onChange={(e) => setFiltroEstado(e.target.value)}
+              >
                 <option value="">Todos</option>
                 <option value="pendiente">Pendiente</option>
                 <option value="finalizada">Finalizada</option>
-                <option value="cancelada_paciente">Cancelada por paciente</option>
+                <option value="cancelada_paciente">
+                  Cancelada por paciente
+                </option>
                 <option value="cancelada_medico">Cancelada por médico</option>
               </select>
             </div>
             <div className="col-md-2">
-              <button className="btn btn-primary fw-bold" style={{ background: "#2e5da1", border: "none", borderRadius: 8 }} onClick={cargarHistorialPaciente}>
+              <button
+                className="btn btn-primary fw-bold"
+                style={{
+                  background: "#2e5da1",
+                  border: "none",
+                  borderRadius: 8,
+                }}
+                onClick={cargarHistorialPaciente}
+              >
                 Consultar Historial
               </button>
               {historialCitas.length > 0 && (
@@ -687,7 +849,12 @@ const DashboardAdmin = () => {
                   </button>
                   <button
                     className="btn btn-outline-primary fw-bold mt-2"
-                    onClick={() => showPdfPreview(() => exportarHistorialPDF(true), "historial_citas_paciente.pdf")}
+                    onClick={() =>
+                      showPdfPreview(
+                        () => exportarHistorialPDF(true),
+                        "historial_citas_paciente.pdf"
+                      )
+                    }
                   >
                     Vista previa PDF
                   </button>
@@ -696,7 +863,9 @@ const DashboardAdmin = () => {
             </div>
           </div>
           {historialCitas.length === 0 ? (
-            <div className="text-center text-secondary py-3">No hay citas para este paciente.</div>
+            <div className="text-center text-secondary py-3">
+              No hay citas para este paciente.
+            </div>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0">
@@ -718,7 +887,10 @@ const DashboardAdmin = () => {
                           if (!c.fecha_cita) return "";
                           const fecha = new Date(c.fecha_cita);
                           const dia = String(fecha.getDate()).padStart(2, "0");
-                          const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+                          const mes = String(fecha.getMonth() + 1).padStart(
+                            2,
+                            "0"
+                          );
                           const anio = fecha.getFullYear();
                           return `${dia}/${mes}/${anio}`;
                         })()}
@@ -732,13 +904,20 @@ const DashboardAdmin = () => {
                             c.estado === 0
                               ? "badge bg-primary"
                               : c.estado === 1
-                                ? "badge bg-success"
-                                : c.estado === 2
-                                  ? "badge bg-warning text-dark"
-                                  : "badge bg-danger"
+                              ? "badge bg-success"
+                              : c.estado === 2
+                              ? "badge bg-warning text-dark"
+                              : "badge bg-danger"
                           }
                         >
-                          {["Pendiente", "Finalizada", "Cancelada por paciente", "Cancelada por médico"][c.estado]}
+                          {
+                            [
+                              "Pendiente",
+                              "Finalizada",
+                              "Cancelada por paciente",
+                              "Cancelada por médico",
+                            ][c.estado]
+                          }
                         </span>
                       </td>
                       <td>{c.motivo || ""}</td>

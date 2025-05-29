@@ -25,7 +25,7 @@ const Login = () => {
     }
 
     axios
-      .post("http://localhost:5000/api/usuarios/iniciarSesion", {
+      .post("http://controlcitas-backend-production.up.railway.app/api/usuarios/iniciarSesion", {
         correo: email,
         contrasena: password,
       })
@@ -41,6 +41,18 @@ const Login = () => {
         // Guarda el usuario en localStorage
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
+        // Guarda datos de medico o paciente si existen
+        if (response.data.medico) {
+          localStorage.setItem("medico", JSON.stringify(response.data.medico));
+        } else {
+          localStorage.removeItem("medico");
+        }
+        if (response.data.paciente) {
+          localStorage.setItem("paciente", JSON.stringify(response.data.paciente));
+        } else {
+          localStorage.removeItem("paciente");
+        }
+
         // Redirige según el rol
         const rol = response.data.user.rol;
         if (rol === "admin") {
@@ -48,7 +60,7 @@ const Login = () => {
         } else if (rol === "paciente") {
           navigate("/home_paciente");
         } else if (rol === "medico") {
-          navigate("/medico/citas");
+          navigate("/home_medico");
         } else {
           navigate("/");
         }

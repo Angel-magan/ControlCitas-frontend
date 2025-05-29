@@ -115,6 +115,27 @@ const Home_paciente = () => {
               <span className="fs-5">Expediente</span>
             </button>
           </div>
+          <div className="col-12 col-md-4 d-flex justify-content-center">
+            <button
+              className="btn btn-secondary btn-lg d-flex flex-column align-items-center justify-content-center shadow"
+              style={{
+                borderRadius: "1rem",
+                minWidth: "200px",
+                minHeight: "140px",
+                background: "#e3eafc",
+                border: "none",
+                color: "#2e5da1",
+                fontWeight: "bold",
+                fontSize: "1.15rem",
+                boxShadow: "0 2px 12px 0 rgba(46,93,161,0.10)",
+                transition: "background 0.2s",
+              }}
+              onClick={() => navigate("/mis-contactos")}
+            >
+              <i className="bi bi-person-lines-fill mb-3" style={{ fontSize: "2.2rem" }}></i>
+              <span className="fs-5">Mis Contactos</span>
+            </button>
+          </div>
         </div>
       </div>
     </>

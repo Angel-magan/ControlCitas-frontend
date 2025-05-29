@@ -49,6 +49,20 @@ const DashboardAdmin = () => {
       .catch(() => setPacientes([]));
   }, []);
 
+  // Inicializa fechas al mes actual
+  useEffect(() => {
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    setFechaInicio(`${yyyy}-${mm}-01`);
+    setFechaFin(`${yyyy}-${mm}-${dd}`);
+    setFechaInicioMedico(`${yyyy}-${mm}-01`);
+    setFechaFinMedico(`${yyyy}-${mm}-${dd}`);
+    setFechaInicioEsp(`${yyyy}-${mm}-01`);
+    setFechaFinEsp(`${yyyy}-${mm}-${dd}`);
+  }, []);
+
   // HU12 - Reporte de citas por fecha
   const generarReporteCitas = async () => {
     if (!fechaInicio || !fechaFin) {
@@ -61,7 +75,7 @@ const DashboardAdmin = () => {
     }
     setReporteCitasLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/reporte-citas", {
+      const res = await axios.get("http://localhost:5000/api/admin/reporte-citas-fecha", {
         params: { fechaInicio, fechaFin }
       });
       setReporteCitas(res.data);
@@ -253,11 +267,19 @@ const DashboardAdmin = () => {
       startY: 38,
       head: [["Fecha", "Hora", "Médico", "Especialidad", "Estado", "Motivo"]],
       body: historialCitas.map(c => [
-        c.fecha,
-        c.hora,
+        c.fecha_cita,
+        c.hora_cita,
         c.medico,
         c.especialidad,
-        c.estado,
+        c.estado === 0
+          ? "Pendiente"
+          : c.estado === 1
+            ? "Finalizada"
+            : c.estado === 2
+              ? "Cancelada por paciente"
+              : c.estado === 3
+                ? "Cancelada por médico"
+                : c.estado,
         c.motivo || ""
       ]),
     });
@@ -637,8 +659,8 @@ const DashboardAdmin = () => {
             <div className="col-md-2">
               <label className="form-label">Orden</label>
               <select className="form-select" value={ordenHistorial} onChange={e => setOrdenHistorial(e.target.value)}>
-                <option value="desc">Más recientes</option>
                 <option value="asc">Más antiguas</option>
+                <option value="desc">Más recientes</option>
               </select>
             </div>
             <div className="col-md-2">
@@ -691,11 +713,34 @@ const DashboardAdmin = () => {
                 <tbody>
                   {historialCitas.map((c, i) => (
                     <tr key={i}>
-                      <td>{c.fecha}</td>
-                      <td>{c.hora}</td>
+                      <td>
+                        {(() => {
+                          if (!c.fecha_cita) return "";
+                          const fecha = new Date(c.fecha_cita);
+                          const dia = String(fecha.getDate()).padStart(2, "0");
+                          const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+                          const anio = fecha.getFullYear();
+                          return `${dia}/${mes}/${anio}`;
+                        })()}
+                      </td>
+                      <td>{c.hora_cita ? c.hora_cita.slice(0, 5) : ""}</td>
                       <td>{c.medico}</td>
                       <td>{c.especialidad}</td>
-                      <td>{c.estado}</td>
+                      <td>
+                        <span
+                          className={
+                            c.estado === 0
+                              ? "badge bg-primary"
+                              : c.estado === 1
+                                ? "badge bg-success"
+                                : c.estado === 2
+                                  ? "badge bg-warning text-dark"
+                                  : "badge bg-danger"
+                          }
+                        >
+                          {["Pendiente", "Finalizada", "Cancelada por paciente", "Cancelada por médico"][c.estado]}
+                        </span>
+                      </td>
                       <td>{c.motivo || ""}</td>
                     </tr>
                   ))}

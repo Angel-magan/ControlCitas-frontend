@@ -17,6 +17,11 @@ const UsuariosAdmin = () => {
   const [editId, setEditId] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Filtros de búsqueda
+  const [busqueda, setBusqueda] = useState("");
+  const [busquedaId, setBusquedaId] = useState("");
+  const [filtroRol, setFiltroRol] = useState("todos");
+
   useEffect(() => {
     fetchUsuarios();
   }, []);
@@ -27,6 +32,21 @@ const UsuariosAdmin = () => {
       .then((res) => setUsuarios(res.data))
       .catch(() => setUsuarios([]));
   };
+
+  // Filtrado en frontend
+  const usuariosFiltrados = usuarios.filter((usuario) => {
+    const coincideBusqueda =
+      busqueda.trim() === "" ||
+      usuario.nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
+      usuario.apellidos.toLowerCase().includes(busqueda.toLowerCase()) ||
+      usuario.correo.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideId =
+      busquedaId.trim() === "" ||
+      usuario.id_usuario.toString() === busquedaId.trim();
+    const coincideRol =
+      filtroRol === "todos" || usuario.rol === filtroRol;
+    return coincideBusqueda && coincideId && coincideRol;
+  });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -146,7 +166,7 @@ const UsuariosAdmin = () => {
         className="shadow p-4 rounded my-5"
         style={{
           background: "#fff",
-          maxWidth: "900px",
+          maxWidth: "1100px",
           width: "100%",
           borderRadius: "18px",
           boxShadow: "0 4px 24px 0 rgba(46,93,161,0.10)",
@@ -155,6 +175,44 @@ const UsuariosAdmin = () => {
         <h3 className="fw-bold text-center mb-3" style={{ color: "#2e5da1" }}>
           Gestión de Usuarios Admin
         </h3>
+
+        {/* Buscador y filtros */}
+        <form className="row g-2 mb-4 align-items-end">
+          <div className="col-md-4">
+            <label className="form-label">Buscar por nombre, apellido o correo</label>
+            <input
+              type="text"
+              className="form-control"
+              value={busqueda}
+              onChange={e => setBusqueda(e.target.value)}
+              placeholder="Ej: Juan, Pérez, correo@correo.com"
+            />
+          </div>
+          <div className="col-md-2">
+            <label className="form-label">Filtrar por ID</label>
+            <input
+              type="number"
+              className="form-control"
+              value={busquedaId}
+              onChange={e => setBusquedaId(e.target.value)}
+              placeholder="ID usuario"
+            />
+          </div>
+          <div className="col-md-2">
+            <label className="form-label">Filtrar por rol</label>
+            <select
+              className="form-select"
+              value={filtroRol}
+              onChange={e => setFiltroRol(e.target.value)}
+            >
+              <option value="todos">Todos</option>
+              <option value="admin">Admin</option>
+              <option value="paciente">Paciente</option>
+              <option value="medico">Médico</option>
+            </select>
+          </div>
+        </form>
+
         <form onSubmit={handleSubmit} className="row g-3 mb-4">
           <div className="col-md-4">
             <label className="form-label">Nombres*</label>
@@ -296,6 +354,7 @@ const UsuariosAdmin = () => {
           <table className="table table-hover align-middle mb-0">
             <thead style={{ background: "#e3eafc" }}>
               <tr>
+                <th>ID</th>
                 <th>Nombres</th>
                 <th>Apellidos</th>
                 <th>Correo</th>
@@ -303,19 +362,21 @@ const UsuariosAdmin = () => {
                 <th>Teléfono</th>
                 <th>Sexo</th>
                 <th>Rol</th>
+                <th>ID especial</th>
                 <th style={{ width: "140px" }}>Acción</th>
               </tr>
             </thead>
             <tbody>
-              {usuarios.length === 0 ? (
+              {usuariosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="text-center text-secondary py-4">
+                  <td colSpan="10" className="text-center text-secondary py-4">
                     No hay usuarios registrados.
                   </td>
                 </tr>
               ) : (
-                usuarios.map((usuario) => (
+                usuariosFiltrados.map((usuario) => (
                   <tr key={usuario.id_usuario}>
+                    <td>{usuario.id_usuario}</td>
                     <td>{usuario.nombres}</td>
                     <td>{usuario.apellidos}</td>
                     <td>{usuario.correo}</td>
@@ -323,6 +384,13 @@ const UsuariosAdmin = () => {
                     <td>{usuario.telefono}</td>
                     <td>{usuario.sexo}</td>
                     <td>{usuario.rol}</td>
+                    <td>
+                      {usuario.rol === "paciente" && usuario.id_paciente
+                        ? `Paciente: ${usuario.id_paciente}`
+                        : usuario.rol === "medico" && usuario.id_medico
+                        ? `Médico: ${usuario.id_medico}`
+                        : "-"}
+                    </td>
                     <td>
                       <button
                         className="btn btn-sm btn-outline-primary me-2"

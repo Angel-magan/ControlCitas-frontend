@@ -13,7 +13,7 @@ const diasSemana = [
 ];
 
 const HorarioMedico = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const medico = JSON.parse(localStorage.getItem("medico"));
     const [horarios, setHorarios] = useState([]);
     const [dia, setDia] = useState("");
     const [horaInicio, setHoraInicio] = useState("");
@@ -24,7 +24,7 @@ const HorarioMedico = () => {
         setLoading(true);
         try {
             const res = await axios.get("http://localhost:5000/api/medico/horarios", {
-                params: { id_medico: user.id_medico },
+                params: { id_medico: medico.id_medico },
             });
             setHorarios(res.data);
         } catch {
@@ -50,7 +50,7 @@ const HorarioMedico = () => {
         }
         try {
             await axios.post("http://localhost:5000/api/medico/horarios", {
-                id_medico: user.id_medico,
+                id_medico: medico.id_medico,
                 dia_semana: dia,
                 hora_inicio: horaInicio,
                 hora_fin: horaFin,

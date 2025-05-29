@@ -63,46 +63,58 @@ const AgendarCita = () => {
     // Obtener horas disponibles para la fecha seleccionada
     const getHorasDisponibles = () => {
         if (!form.fecha || !horarios.length) return [];
-        console.log(form.fecha, horarios);
+        if (!citas || !Array.isArray(citas)) return [];
+
         const [year, month, day] = form.fecha.split("-");
-        const dateObj = new Date(year, month - 1, day); // mes base 0
+        const dateObj = new Date(year, month - 1, day);
         const dia = dateObj
             .toLocaleDateString("es-ES", { weekday: "long" })
             .toLowerCase();
-        console.log(dia);
         const diaBD = diasSemanaMap[dia];
         const horariosDia = horarios.filter(h => h.dia_semana === diaBD);
         if (!horariosDia.length) return [];
         let horas = [];
         horariosDia.forEach(horario => {
-            let [hInicio, mInicio] = horario.hora_inicio.split(":").map(Number);
-            let [hFin, mFin] = horario.hora_fin.split(":").map(Number);
             let start = new Date(`2000-01-01T${horario.hora_inicio}`);
             let end = new Date(`2000-01-01T${horario.hora_fin}`);
             while (start < end) {
-                const horaStr = start.toTimeString().slice(0, 8);
-                const ocupada = (citas || []).some(
-                    c => c.fecha_cita === form.fecha && c.hora_cita === horaStr
+                const horaStr = start.toTimeString().slice(0, 5);
+                // Normaliza la fecha de la cita a YYYY-MM-DD
+                const ocupada = citas.some(
+                    c => {
+                        const citaFecha = new Date(c.fecha_cita).toISOString().slice(0, 10);
+                        return citaFecha === form.fecha && c.hora_cita.slice(0, 5) === horaStr;
+                    }
                 );
-                if (!ocupada) horas.push(horaStr);
-                // Avanza 30 minutos (puedes cambiar a 15 si quieres intervalos más cortos)
+                if (!ocupada) {
+                    horas.push(horaStr);
+                }
                 start.setMinutes(start.getMinutes() + 30);
             }
         });
-        console.log(horas)
         return horas;
 
     };
 
     const handleChange = e => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        if (name === "fecha") {
+            setForm({ ...form, fecha: value, hora: "" });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
         setMensaje("");
     };
 
     const handleSubmit = async e => {
         e.preventDefault();
+        if (!form.hora) {
+            setMensaje("Por favor, selecciona una hora disponible.");
+            return;
+        }
         try {
-            const id_paciente = localStorage.getItem("id_paciente");
+            const paciente = JSON.parse(localStorage.getItem("paciente"));
+            const id_paciente = paciente?.id_paciente;
             await axios.post("http://localhost:5000/api/pacientes/agendarCita", {
                 id_paciente,
                 id_medico: form.medico,
@@ -212,15 +224,14 @@ const AgendarCita = () => {
                         </label>
                         <select
                             name="hora"
+                            className="form-select"
                             value={form.hora}
                             onChange={handleChange}
-                            className="form-select"
-                            required
-                            style={{ borderRadius: "0.7rem", border: "1px solid #e3eafc" }}
+                            disabled={!form.fecha}
                         >
-                            <option value="">Seleccione hora</option>
-                            {getHorasDisponibles().map(h => (
-                                <option key={h} value={h}>{h.slice(0, 5)}</option>
+                            <option value="">Selecciona una hora</option>
+                            {getHorasDisponibles().map(hora => (
+                                <option key={hora} value={hora + ":00"}>{hora}</option>
                             ))}
                         </select>
                     </div>

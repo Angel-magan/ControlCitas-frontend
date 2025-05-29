@@ -137,7 +137,7 @@ const ExpedienteMedico = () => {
               onClick={() => setPacienteSeleccionado(p)}
             >
               <div>
-                <b>ID:</b> {p.id_paciente} <br />
+                <b>ID de paciente:</b> {p.id_paciente} <br />
                 <b>Nombre:</b> {p.nombres} {p.apellidos} <br />
                 <b>Edad:</b> {calcularEdad(p.fechaNacimiento)} <br />
                 <b>Fecha de Nacimiento:</b> {formatearFecha(p.fechaNacimiento)} <br />

@@ -6,6 +6,7 @@ const CitasPacienteMedico = ({ paciente }) => {
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [detalle, setDetalle] = useState(null);
+  const medico = JSON.parse(localStorage.getItem("medico"));
 
   // Declara la variable de entorno para la URL
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -36,6 +37,7 @@ const CitasPacienteMedico = ({ paciente }) => {
         `${apiUrl}/api/medico/expediente/${paciente.id_paciente}`
       );
       setCitas(res.data);
+      console.log(res.data);
     } catch {
       setCitas([]);
       Swal.fire("Error al cargar expediente", "", "error");
@@ -66,6 +68,42 @@ const CitasPacienteMedico = ({ paciente }) => {
         );
       }
     }
+  };
+
+  const abrirEditarInforme = async (detalleCita) => {
+    setDetalle(null); // Cierra el modal de detalle antes de abrir el Swal
+    setTimeout(async () => {
+      const { value: descripcion } = await Swal.fire({
+        title: "Editar informe",
+        input: "textarea",
+        inputLabel: "Descripción del informe",
+        inputPlaceholder: "Escribe el informe aquí...",
+        inputValue: detalleCita.informe,
+        showCancelButton: true,
+        preConfirm: (value) => {
+          if (!value || value.trim() === "") {
+            Swal.showValidationMessage("La descripción no puede estar vacía");
+          }
+          return value;
+        },
+      });
+      if (descripcion !== undefined && descripcion.trim() !== "") {
+        try {
+          await axios.put(
+            `${apiUrl}/api/medico/editar-informe/${detalleCita.id_cita}`,
+            { descripcion }
+          );
+          Swal.fire("Informe actualizado", "", "success");
+          await cargarCitas();
+        } catch (err) {
+          Swal.fire(
+            "Error",
+            err.response?.data?.error || "No se pudo actualizar el informe",
+            "error"
+          );
+        }
+      }
+    }, 200); // Espera 200ms para que el modal de detalle se cierre antes de abrir el Swal
   };
 
   const verDetalle = (cita) => setDetalle(cita);
@@ -150,9 +188,11 @@ const CitasPacienteMedico = ({ paciente }) => {
                     >
                       Ver detalle
                     </button>
+                    {/* Mostrar botón solo si es el médico, la cita ya pasó, no tiene informe y está pendiente */}
                     {cita.estado === 0 &&
                       citaYaPaso(cita.fecha_cita, cita.hora_cita) &&
-                      !cita.informe && (
+                      !cita.informe &&
+                      cita.id_medico === medico.id_medico && (
                         <button
                           className="btn btn-outline-success btn-sm ms-2"
                           onClick={() => abrirModalInforme(cita.id_cita)}
@@ -160,6 +200,18 @@ const CitasPacienteMedico = ({ paciente }) => {
                           Agregar informe
                         </button>
                       )}
+
+                    {/* Mostrar mensaje si la cita ya pasó, no tiene informe, está pendiente, pero NO es el médico */}
+                    {cita.estado === 0 &&
+                      citaYaPaso(cita.fecha_cita, cita.hora_cita) &&
+                      !cita.informe &&
+                      cita.id_medico !== medico.id_medico && (
+                        <span className="text-muted ms-2">
+                          Solo el médico de esta cita puede agregar informe
+                        </span>
+                      )}
+
+                    {/* Mostrar mensaje si la cita aún no ha pasado */}
                     {cita.estado === 0 &&
                       !citaYaPaso(cita.fecha_cita, cita.hora_cita) && (
                         <span className="text-muted ms-2">
@@ -238,6 +290,15 @@ const CitasPacienteMedico = ({ paciente }) => {
                 <div>
                   <b>Fecha informe:</b> {formatearFecha(detalle.fecha_registro)}
                 </div>
+              )}
+              {/* Botón para editar informe solo si es el médico de la cita */}
+              {detalle.informe && detalle.id_medico === medico.id_medico && (
+                <button
+                  className="btn btn-outline-warning btn-sm mt-3"
+                  onClick={() => abrirEditarInforme(detalle)}
+                >
+                  Editar informe
+                </button>
               )}
             </div>
           </div>

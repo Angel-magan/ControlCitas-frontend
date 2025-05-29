@@ -61,23 +61,57 @@ const MedicosAdmin = () => {
     const especialidadObj = especialidades.find(
       (esp) => esp.nombre === medico.especialidad
     );
+    // Quitar el prefijo de la licencia médica si existe
+    let licenciaSoloNumeros = medico.licencia_medica;
+    if (licenciaSoloNumeros.startsWith("J.V.P.M-")) {
+      licenciaSoloNumeros = licenciaSoloNumeros.replace("J.V.P.M-", "");
+    }
     setMedicoEdit({
       ...medico,
-      id_especialidad: especialidadObj ? especialidadObj.id_especialidad : ""
+      id_especialidad: especialidadObj ? especialidadObj.id_especialidad : "",
+      licencia_medica: licenciaSoloNumeros,
     });
     setShowModal(true);
   };
 
   const handleEditChange = (e) => {
-    setMedicoEdit({ ...medicoEdit, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // DUI: solo permite 8 dígitos, guion, 1 dígito
+    if (name === "num_identificacion") {
+      let val = value.replace(/[^\d-]/g, "");
+      if (/^\d{9}$/.test(val)) {
+        val = val.slice(0, 8) + "-" + val.slice(8);
+      }
+      if (val.length > 10) val = val.slice(0, 10);
+      setMedicoEdit({ ...medicoEdit, [name]: val });
+      return;
+    }
+    // Licencia Médica: solo permite 5 dígitos (sin prefijo)
+    if (name === "licencia_medica") {
+      let val = value.replace(/\D/g, "");
+      if (val.length > 5) val = val.slice(0, 5);
+      setMedicoEdit({ ...medicoEdit, [name]: val });
+      return;
+    }
+    setMedicoEdit({ ...medicoEdit, [name]: value });
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    // Validación de DUI
+    if (!/^\d{8}-\d$/.test(medicoEdit.num_identificacion)) {
+      Swal.fire("Error", "El DUI debe tener el formato 06584869-1", "error");
+      return;
+    }
+    // Validación de Licencia Médica
+    if (!/^\d{5}$/.test(medicoEdit.licencia_medica)) {
+      Swal.fire("Error", "La Licencia Médica debe tener el formato J.V.P.M-12345", "error");
+      return;
+    }
     try {
       await axios.put(`${apiUrl}/api/admin/medicos/${medicoEdit.id_medico}`, {
         id_especialidad: medicoEdit.id_especialidad,
-        licencia_medica: medicoEdit.licencia_medica,
+        licencia_medica: `J.V.P.M-${medicoEdit.licencia_medica}`,
         num_identificacion: medicoEdit.num_identificacion,
         activo: medicoEdit.activo,
       });
@@ -234,9 +268,23 @@ const MedicosAdmin = () => {
                             ? "btn-outline-danger"
                             : "btn-outline-success"
                           }`}
-                        onClick={() =>
-                          cambiarEstado(medico.id_medico, medico.activo)
-                        }
+                        onClick={async () => {
+                          if (medico.activo === 1) {
+                            // Si va a desactivar, mostrar confirmación
+                            const result = await Swal.fire({
+                              title: "¿Está seguro?",
+                              html:
+                                "Si desactiva al médico, <b>todas sus citas pendientes serán canceladas</b> y los pacientes serán notificados.<br>¿Desea continuar?",
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonText: "Sí, desactivar",
+                              cancelButtonText: "Cancelar",
+                              reverseButtons: true,
+                            });
+                            if (!result.isConfirmed) return;
+                          }
+                          cambiarEstado(medico.id_medico, medico.activo);
+                        }}
                         style={{ minWidth: "90px", marginRight: "6px" }}
                       >
                         {medico.activo === 1 ? "Desactivar" : "Activar"}
@@ -301,14 +349,20 @@ const MedicosAdmin = () => {
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Licencia Médica</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="licencia_medica"
-                      value={medicoEdit.licencia_medica}
-                      onChange={handleEditChange}
-                      required
-                    />
+                    <div className="input-group">
+                      <span className="input-group-text">J.V.P.M-</span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="licencia_medica"
+                        value={medicoEdit.licencia_medica}
+                        onChange={handleEditChange}
+                        required
+                        placeholder="12345"
+                        maxLength={5}
+                        inputMode="numeric"
+                      />
+                    </div>
                   </div>
                   <div className="mb-3">
                     <label className="form-label">DUI</label>
@@ -319,6 +373,8 @@ const MedicosAdmin = () => {
                       value={medicoEdit.num_identificacion}
                       onChange={handleEditChange}
                       required
+                      placeholder="00000000-0"
+                      maxLength={10}
                     />
                   </div>
                   <div className="mb-3">

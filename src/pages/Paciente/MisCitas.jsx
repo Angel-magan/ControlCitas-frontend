@@ -29,6 +29,7 @@ const MisCitas = () => {
         params,
       });
       setCitas(res.data);
+      console.log(res.data);
       if (res.data.length === 0) setMensaje("No hay citas registradas.");
       else setMensaje("");
     } catch {
@@ -84,6 +85,20 @@ const MisCitas = () => {
     const anio = fecha.getFullYear();
     return `${dia}/${mes}/${anio}`;
   };
+
+  const ahora = new Date();
+  const citasFiltradas = citas.filter((c) => {
+    const fecha = c.fecha_cita.split("T")[0];
+    const fechaHoraCita = new Date(`${fecha}T${c.hora_cita.length === 5 ? c.hora_cita + ":00" : c.hora_cita}`);
+    if (tipo === "pasadas") {
+      return c.estado !== 0 || fechaHoraCita < ahora;
+    } else if (tipo === "futuras") {
+      return c.estado === 0 && fechaHoraCita >= ahora;
+    }
+    return true;
+  });
+
+
 
   return (
     <>
@@ -190,7 +205,7 @@ const MisCitas = () => {
                 </tr>
               </thead>
               <tbody>
-                {citas.map((c) => (
+                {citasFiltradas.map((c) => (
                   <tr key={c.id_cita}>
                     <td>
                       {c.medico_nombre} {c.medico_apellido}

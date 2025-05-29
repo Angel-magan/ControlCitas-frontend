@@ -38,11 +38,32 @@ const Login = () => {
           timer: 2000,
         });
 
-        // Aquí puedes guardar el usuario en localStorage o usar contexto
-        console.log(response.data.user);
+        // Guarda el usuario en localStorage
+        localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        // Redirige a otra ruta, por ejemplo al dashboard
-        navigate("/home");
+        // Guarda datos de medico o paciente si existen
+        if (response.data.medico) {
+          localStorage.setItem("medico", JSON.stringify(response.data.medico));
+        } else {
+          localStorage.removeItem("medico");
+        }
+        if (response.data.paciente) {
+          localStorage.setItem("paciente", JSON.stringify(response.data.paciente));
+        } else {
+          localStorage.removeItem("paciente");
+        }
+
+        // Redirige según el rol
+        const rol = response.data.user.rol;
+        if (rol === "admin") {
+          navigate("/home_admin");
+        } else if (rol === "paciente") {
+          navigate("/home_paciente");
+        } else if (rol === "medico") {
+          navigate("/home_medico");
+        } else {
+          navigate("/");
+        }
       })
       .catch((error) => {
         Swal.fire({
@@ -57,57 +78,56 @@ const Login = () => {
 
   return (
     <div className="fondo">
-      <section className="w-50">
-        <h2 className="text-center text-light mb-3">Iniciar sesión</h2>
-        <div className="text-light border-b-3" style={{ textAlign: "center" }}>
-          <input
-            className="form-control mb-3"
-            style={{ height: "43px" }}
-            type="text"
-            placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <div className="input-group mb-4">
+      <div className="login-container">
+        <section className="login-section">
+          <h2 className="text-center text-dark mb-3">Iniciar sesión</h2>
+          <div className="text-light border-b-3" style={{ textAlign: "center" }}>
             <input
-              type={showPassword ? "text" : "password"}
-              className="form-control"
-              placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              className="form-control mb-3"
+              style={{ height: "43px" }}
+              type="text"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <span
-              className="input-group-text"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{ cursor: "pointer" }}
+            <div className="input-group mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <span
+                className="input-group-text"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ cursor: "pointer" }}
+              >
+                {showPassword ? (
+                  <i className="bi bi-eye-slash-fill fs-5 text-primary"></i>
+                ) : (
+                  <i className="bi bi-eye-fill fs-5 text-primary"></i>
+                )}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary fw-bold px-4 mb-2"
+              onClick={handleLogin}
             >
-              {showPassword ? (
-                <i className="bi bi-eye-slash-fill fs-5 text-primary"></i>
-              ) : (
-                <i className="bi bi-eye-fill fs-5 text-primary"></i>
-              )}
-            </span>
+              Acceder
+            </button>
           </div>
-          <button
-            type="button"
-            className="btn btn-primary fw-bold px-4 mb-2"
-            onClick={handleLogin}
-          >
-            Acceder
-          </button>
-        </div>
-      </section>
-      <section
-        className="border-start border-dark border-5 p-5"
-        style={{ textAlign: "center" }}
-      >
-        <h2 className="text-dark">¿No tienes cuenta?</h2>
-        <Link to="/registerUser">
-          <button className="btn btn-primary fw-bold px-4 mt-4">
-            Registrarse
-          </button>
-        </Link>
-      </section>
+        </section>
+        <section className="register-section text-center">
+          <h4 className="text-dark ">¿No tienes cuenta?</h4>
+          <Link to="/registerUser">
+            <button className="btn btn-primary fw-bold px-4 mt-4">
+              Registrarse
+            </button>
+          </Link>
+        </section>
+      </div>
     </div>
   );
 };

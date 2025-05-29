@@ -124,6 +124,13 @@ const NavbarApp = () => {
               >
                 Especialidades
               </Nav.Link>
+              <Nav.Link
+                as={NavLink}
+                to="/admin/contactos-paciente"
+                style={navLinkStyle}
+              >
+                Contactos Paciente
+              </Nav.Link>
             </Nav>
             <Nav className="ms-auto">{userDropdown}</Nav>
           </Navbar.Collapse>
@@ -184,6 +191,13 @@ const NavbarApp = () => {
                 style={navLinkStyle}
               >
                 Expediente
+              </Nav.Link>
+              <Nav.Link
+                as={NavLink}
+                to="/mis-contactos"
+                style={navLinkStyle}
+              >
+                Mis Contactos
               </Nav.Link>
             </Nav>
             <Nav className="ms-auto">{userDropdown}</Nav>

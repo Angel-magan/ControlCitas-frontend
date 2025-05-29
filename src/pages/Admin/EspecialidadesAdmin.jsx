@@ -7,6 +7,10 @@ const EspecialidadesAdmin = () => {
   const [form, setForm] = useState({ nombre: "", descripcion: "" });
   const [editId, setEditId] = useState(null);
 
+  // Filtros de búsqueda
+  const [busqueda, setBusqueda] = useState("");
+  const [busquedaId, setBusquedaId] = useState("");
+
   useEffect(() => {
     fetchEspecialidades();
   }, []);
@@ -82,6 +86,18 @@ const EspecialidadesAdmin = () => {
     setEditId(null);
   };
 
+  // Filtrado en frontend
+  const especialidadesFiltradas = especialidades.filter((esp) => {
+    const coincideBusqueda =
+      busqueda.trim() === "" ||
+      esp.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (esp.descripcion || "").toLowerCase().includes(busqueda.toLowerCase());
+    const coincideId =
+      busquedaId.trim() === "" ||
+      esp.id_especialidad.toString() === busquedaId.trim();
+    return coincideBusqueda && coincideId;
+  });
+
   return (
     <div
       className="d-flex flex-column align-items-center justify-content-center"
@@ -95,7 +111,7 @@ const EspecialidadesAdmin = () => {
         className="shadow p-4 rounded my-5"
         style={{
           background: "#fff",
-          maxWidth: "600px",
+          maxWidth: "700px",
           width: "100%",
           borderRadius: "18px",
           boxShadow: "0 4px 24px 0 rgba(46,93,161,0.10)",
@@ -104,6 +120,31 @@ const EspecialidadesAdmin = () => {
         <h3 className="fw-bold text-center mb-3" style={{ color: "#2e5da1" }}>
           Gestión de Especialidades
         </h3>
+
+        {/* Buscador y filtro */}
+        <form className="row g-2 mb-4 align-items-end">
+          <div className="col-md-6">
+            <label className="form-label">Buscar por nombre o descripción</label>
+            <input
+              type="text"
+              className="form-control"
+              value={busqueda}
+              onChange={e => setBusqueda(e.target.value)}
+              placeholder="Ej: Cardiología, cirugía..."
+            />
+          </div>
+          <div className="col-md-3">
+            <label className="form-label">Filtrar por ID</label>
+            <input
+              type="number"
+              className="form-control"
+              value={busquedaId}
+              onChange={e => setBusquedaId(e.target.value)}
+              placeholder="ID especialidad"
+            />
+          </div>
+        </form>
+
         <form onSubmit={handleSubmit} className="row g-3 mb-4">
           <div className="col-md-6">
             <label className="form-label">Nombre</label>
@@ -160,21 +201,23 @@ const EspecialidadesAdmin = () => {
           <table className="table table-hover align-middle mb-0">
             <thead style={{ background: "#e3eafc" }}>
               <tr>
+                <th>ID</th>
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th style={{ width: "160px" }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {especialidades.length === 0 ? (
+              {especialidadesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="text-center text-secondary py-4">
+                  <td colSpan="4" className="text-center text-secondary py-4">
                     No hay especialidades registradas.
                   </td>
                 </tr>
               ) : (
-                especialidades.map((esp) => (
+                especialidadesFiltradas.map((esp) => (
                   <tr key={esp.id_especialidad}>
+                    <td>{esp.id_especialidad}</td>
                     <td>{esp.nombre}</td>
                     <td>{esp.descripcion}</td>
                     <td>

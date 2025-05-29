@@ -22,6 +22,9 @@ import HorarioMedico from "./pages/Medico/HorarioMedico";
 import CitasMedico from "./pages/Medico/CitasMedico";
 import ExpedientePaciente from "./pages/Paciente/ExpedientePaciente";
 import ExpedienteMedico from "./pages/Medico/ExpedienteMedico";
+import ContactosPaciente from "./pages/Paciente/ContactosPaciente";
+// Importa el componente
+import ContactosPacienteAdmin from "./pages/Admin/ContactosPacienteAdmin";
 
 function App() {
   return (
@@ -63,6 +66,14 @@ function App() {
               element={
                 <ProtectedRoute rolesPermitidos={["paciente"]}>
                   <ExpedientePaciente />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mis-contactos"
+              element={
+                <ProtectedRoute rolesPermitidos={["paciente"]}>
+                  <ContactosPaciente />
                 </ProtectedRoute>
               }
             />
@@ -114,6 +125,14 @@ function App() {
               element={
                 <ProtectedRoute rolesPermitidos={["admin"]}>
                   <EspecialidadesAdmin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/contactos-paciente"
+              element={
+                <ProtectedRoute rolesPermitidos={["admin"]}>
+                  <ContactosPacienteAdmin />
                 </ProtectedRoute>
               }
             />

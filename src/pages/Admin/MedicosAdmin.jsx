@@ -8,6 +8,10 @@ const MedicosAdmin = () => {
   const [especialidades, setEspecialidades] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [medicoEdit, setMedicoEdit] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [busquedaId, setBusquedaId] = useState("");
+  const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +75,22 @@ const MedicosAdmin = () => {
     }
   };
 
+  // Filtrado de médicos
+  const medicosFiltrados = medicos.filter((medico) => {
+    const coincideNombre =
+      busqueda.trim() === "" ||
+      medico.nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
+      medico.apellidos.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideId =
+      busquedaId.trim() === "" ||
+      medico.id_medico.toString() === busquedaId.trim();
+    const coincideEspecialidad =
+      filtroEspecialidad === "" || medico.especialidad === filtroEspecialidad;
+    const coincideEstado =
+      filtroEstado === "" || medico.activo.toString() === filtroEstado;
+    return coincideNombre && coincideId && coincideEspecialidad && coincideEstado;
+  });
+
   return (
     <div
       style={{
@@ -100,10 +120,59 @@ const MedicosAdmin = () => {
             Registrar Médico
           </button>
         </div>
+
+        {/* Filtros de búsqueda */}
+        <div className="row g-2 mb-3">
+          <div className="col-md-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar por nombre o apellido"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
+          <div className="col-md-2">
+            <input
+              type="number"
+              className="form-control"
+              placeholder="ID Médico"
+              value={busquedaId}
+              onChange={(e) => setBusquedaId(e.target.value)}
+            />
+          </div>
+          <div className="col-md-3">
+            <select
+              className="form-select"
+              value={filtroEspecialidad}
+              onChange={(e) => setFiltroEspecialidad(e.target.value)}
+            >
+              <option value="">Todas las especialidades</option>
+              {especialidades.map((esp) => (
+                <option key={esp.id_especialidad} value={esp.nombre}>
+                  {esp.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-2">
+            <select
+              className="form-select"
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
+          </div>
+        </div>
+
         <div className="table-responsive shadow rounded" style={{ background: "#fff" }}>
           <table className="table table-hover align-middle mb-0">
             <thead style={{ background: "#e3eafc" }}>
               <tr>
+                <th>ID Médico</th>
                 <th>Nombre</th>
                 <th>Correo</th>
                 <th>Especialidad</th>
@@ -115,15 +184,16 @@ const MedicosAdmin = () => {
               </tr>
             </thead>
             <tbody>
-              {medicos.length === 0 ? (
+              {medicosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="text-center text-secondary py-4">
+                  <td colSpan="9" className="text-center text-secondary py-4">
                     No hay médicos registrados.
                   </td>
                 </tr>
               ) : (
-                medicos.map((medico) => (
+                medicosFiltrados.map((medico) => (
                   <tr key={medico.id_medico}>
+                    <td>{medico.id_medico}</td>
                     <td>
                       {medico.nombres} {medico.apellidos}
                     </td>

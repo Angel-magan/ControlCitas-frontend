@@ -268,9 +268,23 @@ const MedicosAdmin = () => {
                             ? "btn-outline-danger"
                             : "btn-outline-success"
                           }`}
-                        onClick={() =>
-                          cambiarEstado(medico.id_medico, medico.activo)
-                        }
+                        onClick={async () => {
+                          if (medico.activo === 1) {
+                            // Si va a desactivar, mostrar confirmación
+                            const result = await Swal.fire({
+                              title: "¿Está seguro?",
+                              html:
+                                "Si desactiva al médico, <b>todas sus citas pendientes serán canceladas</b> y los pacientes serán notificados.<br>¿Desea continuar?",
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonText: "Sí, desactivar",
+                              cancelButtonText: "Cancelar",
+                              reverseButtons: true,
+                            });
+                            if (!result.isConfirmed) return;
+                          }
+                          cambiarEstado(medico.id_medico, medico.activo);
+                        }}
                         style={{ minWidth: "90px", marginRight: "6px" }}
                       >
                         {medico.activo === 1 ? "Desactivar" : "Activar"}

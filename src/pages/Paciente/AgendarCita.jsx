@@ -80,25 +80,45 @@ const AgendarCita = () => {
     const diaBD = diasSemanaMap[dia];
     const horariosDia = horarios.filter((h) => h.dia_semana === diaBD);
     if (!horariosDia.length) return [];
+
     let horas = [];
+
     horariosDia.forEach((horario) => {
       let start = new Date(`2000-01-01T${horario.hora_inicio}`);
       let end = new Date(`2000-01-01T${horario.hora_fin}`);
+
       while (start < end) {
         const horaStr = start.toTimeString().slice(0, 5);
-        // Normaliza la fecha de la cita a YYYY-MM-DD
+
+        const esHoy = form.fecha === new Date().toISOString().split("T")[0];
+
+        // Validar si es hoy y la hora ya pasó
+        if (esHoy) {
+          const ahora = new Date();
+          const horaActual = new Date(
+            `2000-01-01T${ahora.toTimeString().slice(0, 5)}`
+          );
+          if (start <= horaActual) {
+            start.setMinutes(start.getMinutes() + 30);
+            continue; // Saltar horas pasadas
+          }
+        }
+
         const ocupada = citas.some((c) => {
           const citaFecha = new Date(c.fecha_cita).toISOString().slice(0, 10);
           return (
             citaFecha === form.fecha && c.hora_cita.slice(0, 5) === horaStr
           );
         });
+
         if (!ocupada) {
           horas.push(horaStr);
         }
+
         start.setMinutes(start.getMinutes() + 30);
       }
     });
+
     return horas;
   };
 

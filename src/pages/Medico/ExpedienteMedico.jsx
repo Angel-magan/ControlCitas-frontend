@@ -23,6 +23,7 @@ const ExpedienteMedico = () => {
         params: { q: "" },
       });
       setPacientes(res.data);
+      console.log(res.data);
     } catch {
       setPacientes([]);
       Swal.fire("Error al cargar pacientes", "", "error");
@@ -39,12 +40,62 @@ const ExpedienteMedico = () => {
         params: { q: busqueda },
       });
       setPacientes(res.data);
+      console.log(pacientes);
     } catch {
       setPacientes([]);
       Swal.fire("Error al buscar pacientes", "", "error");
     }
     setLoading(false);
   };
+
+  function formatearFecha(fechaStr) {
+    if (!fechaStr) return "";
+    // Soporta tanto Date como string tipo "YYYY-MM-DD"
+    if (typeof fechaStr === "string" && /^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+      const [anio, mes, dia] = fechaStr.split("-");
+      return `${dia}/${mes}/${anio}`;
+    }
+    // Si es Date o string con hora
+    const fecha = new Date(fechaStr);
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  // Puedes colocar esta función junto a formatearFecha en tu componente
+
+  function calcularEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return "";
+  let anio, mes, dia;
+  if (typeof fechaNacimiento === "string" && /^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)) {
+    [anio, mes, dia] = fechaNacimiento.split("-");
+  } else {
+    const fecha = new Date(fechaNacimiento);
+    anio = fecha.getFullYear();
+    mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    dia = String(fecha.getDate()).padStart(2, "0");
+  }
+  const hoy = new Date();
+  const fechaNac = new Date(`${anio}-${mes}-${dia}`);
+  let edad = hoy.getFullYear() - anio;
+  let meses = hoy.getMonth() - (parseInt(mes) - 1);
+
+  if (hoy.getDate() < parseInt(dia)) {
+    meses--;
+  }
+  if (meses < 0) {
+    edad--;
+    meses += 12;
+  }
+
+  if (edad < 1) {
+    // Solo meses si es menor a un año
+    return `${meses} mes${meses === 1 ? "" : "es"}`;
+  }
+  // Solo años si es 1 año o más
+  return `${edad} año${edad === 1 ? "" : "s"}`;
+}
 
   return (
     <div className="container py-4">
@@ -75,19 +126,21 @@ const ExpedienteMedico = () => {
         <div className="text-center text-secondary py-4">Cargando...</div>
       ) : (
         <div className="list-group">
+
           {pacientes.map((p) => (
             <button
               key={p.id_paciente}
-              className={`list-group-item list-group-item-action${
-                pacienteSeleccionado?.id_paciente === p.id_paciente
+              className={`list-group-item list-group-item-action${pacienteSeleccionado?.id_paciente === p.id_paciente
                   ? " active"
                   : ""
-              }`}
+                }`}
               onClick={() => setPacienteSeleccionado(p)}
             >
               <div>
                 <b>ID:</b> {p.id_paciente} <br />
                 <b>Nombre:</b> {p.nombres} {p.apellidos} <br />
+                <b>Edad:</b> {calcularEdad(p.fechaNacimiento)} <br />
+                <b>Fecha de Nacimiento:</b> {formatearFecha(p.fechaNacimiento)} <br />
                 <b>Correo:</b> {p.correo} <br />
                 <b>Teléfono:</b>{" "}
                 {p.telefono || (

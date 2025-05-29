@@ -13,7 +13,8 @@ const Login = () => {
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  const handleLogin = () => {
+  const handleLogin = (e) => {
+    if (e) e.preventDefault(); // Evita recargar la página si viene de un submit
     if (!email || !password) {
       Swal.fire({
         title: "Error",
@@ -89,41 +90,45 @@ const Login = () => {
             className="text-light border-b-3"
             style={{ textAlign: "center" }}
           >
-            <input
-              className="form-control mb-3"
-              style={{ height: "43px" }}
-              type="text"
-              placeholder="Correo electrónico"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <div className="input-group mb-4">
+            <form onSubmit={handleLogin}>
               <input
-                type={showPassword ? "text" : "password"}
-                className="form-control"
-                placeholder="Contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                className="form-control mb-3"
+                style={{ height: "43px" }}
+                type="text"
+                placeholder="Correo electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
-              <span
-                className="input-group-text"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{ cursor: "pointer" }}
+              <div className="input-group mb-4">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control"
+                  placeholder="Contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <span
+                  className="input-group-text"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {showPassword ? (
+                    <i className="bi bi-eye-slash-fill fs-5 text-primary"></i>
+                  ) : (
+                    <i className="bi bi-eye-fill fs-5 text-primary"></i>
+                  )}
+                </span>
+              </div>
+              <button
+                type="submit"
+                className="btn btn-primary fw-bold px-4 mb-2"
               >
-                {showPassword ? (
-                  <i className="bi bi-eye-slash-fill fs-5 text-primary"></i>
-                ) : (
-                  <i className="bi bi-eye-fill fs-5 text-primary"></i>
-                )}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="btn btn-primary fw-bold px-4 mb-2"
-              onClick={handleLogin}
-            >
-              Acceder
-            </button>
+                Acceder
+              </button>
+            </form>
+            <Link to="/forgot-password" className="d-block mt-2">
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
         </section>
         <section className="register-section text-center">

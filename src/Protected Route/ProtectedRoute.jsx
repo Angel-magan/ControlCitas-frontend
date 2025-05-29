@@ -1,26 +1,28 @@
-import React from "react";
-import Swal from "sweetalert2";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
-// rolesPermitidos: array de roles válidos para la ruta
 const ProtectedRoute = ({ rolesPermitidos, children }) => {
+  const [isValid, setIsValid] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
 
-  if (!user) {
-    // No autenticado
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.key === "user" && !localStorage.getItem("user")) {
+        setIsValid(false);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  if (!user || !isValid) {
+    // No autenticado o sesión cerrada en otra pestaña
     return <Navigate to="/" replace />;
   }
 
   if (!rolesPermitidos.includes(user.rol)) {
     // No tiene el rol requerido
-    Swal.fire({
-      title: "Acceso denegado",
-      text: "No tienes permisos para acceder a esta página.",
-      icon: "error",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-    return null; // No navega, solo muestra el mensaje y no renderiza el contenido
+    return <Navigate to="/" replace />;
   }
 
   // Autenticado y con rol permitido

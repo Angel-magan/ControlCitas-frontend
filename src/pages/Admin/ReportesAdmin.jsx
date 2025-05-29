@@ -63,6 +63,13 @@ const ReportesAdmin = () => {
 	// 		.catch(() => setPacientes([]));
 	// }, []);
 
+
+	useEffect(() => {
+		axios.get("http://localhost:5000/api/admin/medicos")
+			.then(res => setMedicos(res.data))
+			.catch(() => setMedicos([]));
+	}, []);
+
 	// Inicializa fechas al mes actual
 	useEffect(() => {
 		const hoy = new Date();
@@ -132,12 +139,12 @@ const ReportesAdmin = () => {
 				c.estado === 0
 					? "Pendiente"
 					: c.estado === 1
-					? "Finalizada"
-					: c.estado === 2
-					? "Cancelada por paciente"
-					: c.estado === 3
-					? "Cancelada por médico"
-					: "Desconocido",
+						? "Finalizada"
+						: c.estado === 2
+							? "Cancelada por paciente"
+							: c.estado === 3
+								? "Cancelada por médico"
+								: "Desconocido",
 			]),
 		});
 		if (preview) return doc;
@@ -199,7 +206,15 @@ const ReportesAdmin = () => {
 			autoTable(doc, {
 				startY,
 				head: [["Fecha", "Hora", "Paciente", "Estado"]],
-				body: reporteMedico.map((c) => [c.fecha, c.hora, c.paciente, c.estado]),
+				body: reporteMedico.map((c) => [formatearFecha(c.fecha_cita), c.hora_cita, c.paciente, c.estado === 0
+					? "Pendiente"
+					: c.estado === 1
+						? "Finalizada"
+						: c.estado === 2
+							? "Cancelada por paciente"
+							: c.estado === 3
+								? "Cancelada por médico"
+								: "Desconocido"]),
 			});
 		}
 		if (preview) return doc;
@@ -305,8 +320,7 @@ const ReportesAdmin = () => {
 		doc.text("Clínica Johnson - Historial de Citas de Paciente", 32, 18);
 		doc.setFontSize(11);
 		doc.text(
-			`Paciente: ${paciente?.nombres} ${paciente?.apellidos} (${
-				paciente?.num_identificacion || ""
+			`Paciente: ${paciente?.nombres} ${paciente?.apellidos} (${paciente?.num_identificacion || ""
 			})`,
 			32,
 			26
@@ -323,12 +337,12 @@ const ReportesAdmin = () => {
 				c.estado === 0
 					? "Pendiente"
 					: c.estado === 1
-					? "Finalizada"
-					: c.estado === 2
-					? "Cancelada por paciente"
-					: c.estado === 3
-					? "Cancelada por médico"
-					: c.estado,
+						? "Finalizada"
+						: c.estado === 2
+							? "Cancelada por paciente"
+							: c.estado === 3
+								? "Cancelada por médico"
+								: c.estado,
 				c.motivo || "",
 			]),
 		});
@@ -536,12 +550,12 @@ const ReportesAdmin = () => {
 												{c.estado === 0
 													? "Pendiente"
 													: c.estado === 1
-													? "Finalizada"
-													: c.estado === 2
-													? "Cancelada por paciente"
-													: c.estado === 3
-													? "Cancelada por médico"
-													: "Desconocido"}
+														? "Finalizada"
+														: c.estado === 2
+															? "Cancelada por paciente"
+															: c.estado === 3
+																? "Cancelada por médico"
+																: "Desconocido"}
 											</td>
 										</tr>
 									))}
@@ -661,10 +675,20 @@ const ReportesAdmin = () => {
 								<tbody>
 									{reporteMedico.map((c, i) => (
 										<tr key={i}>
-											<td>{c.fecha}</td>
-											<td>{c.hora}</td>
+											<td>{formatearFecha(c.fecha_cita)}</td>
+											<td>{c.hora_cita}</td>
 											<td>{c.paciente}</td>
-											<td>{c.estado}</td>
+											<td>
+												{c.estado === 0
+													? "Pendiente"
+													: c.estado === 1
+														? "Finalizada"
+														: c.estado === 2
+															? "Cancelada por paciente"
+															: c.estado === 3
+																? "Cancelada por médico"
+																: "Desconocido"}
+											</td>
 										</tr>
 									))}
 								</tbody>
@@ -914,10 +938,10 @@ const ReportesAdmin = () => {
 														c.estado === 0
 															? "badge bg-primary"
 															: c.estado === 1
-															? "badge bg-success"
-															: c.estado === 2
-															? "badge bg-warning text-dark"
-															: "badge bg-danger"
+																? "badge bg-success"
+																: c.estado === 2
+																	? "badge bg-warning text-dark"
+																	: "badge bg-danger"
 													}
 												>
 													{

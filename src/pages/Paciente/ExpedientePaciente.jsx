@@ -10,19 +10,62 @@ const formatearFecha = (fechaStr) => {
   return `${dia}/${mes}/${anio}`;
 };
 
+function calcularEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return "";
+  let anio, mes, dia;
+  if (
+    typeof fechaNacimiento === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)
+  ) {
+    [anio, mes, dia] = fechaNacimiento.split("-");
+  } else {
+    const fecha = new Date(fechaNacimiento);
+    anio = fecha.getFullYear();
+    mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    dia = String(fecha.getDate()).padStart(2, "0");
+  }
+  const hoy = new Date();
+  const fechaNac = new Date(`${anio}-${mes}-${dia}`);
+  let edad = hoy.getFullYear() - anio;
+  let meses = hoy.getMonth() - (parseInt(mes) - 1);
+
+  if (hoy.getDate() < parseInt(dia)) {
+    meses--;
+  }
+  if (meses < 0) {
+    edad--;
+    meses += 12;
+  }
+
+  if (edad < 1) {
+    return `${meses} mes${meses === 1 ? "" : "es"}`;
+  }
+  return `${edad} año${edad === 1 ? "" : "s"}`;
+}
+
 const ExpedientePaciente = () => {
   const [expediente, setExpediente] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState("");
   const [detalle, setDetalle] = useState(null);
+  const [datosPaciente, setDatosPaciente] = useState(null);
 
-  // Declara la variable de entorno para la URL
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const paciente = JSON.parse(localStorage.getItem("paciente"));
     if (!paciente) return;
     setLoading(true);
+
+    // Obtener datos personales del paciente
+    axios
+      .get(`${apiUrl}/api/pacientes/datos`, {
+        params: { id_paciente: paciente.id_paciente },
+      })
+      .then((res) => setDatosPaciente(res.data))
+      .catch(() => setDatosPaciente(null));
+
+    // Obtener expediente
     axios
       .get(`${apiUrl}/api/pacientes/expediente`, {
         params: { id_paciente: paciente.id_paciente },
@@ -40,6 +83,37 @@ const ExpedientePaciente = () => {
       <h2 className="fw-bold mb-4" style={{ color: "#2e5da1" }}>
         Mi Expediente
       </h2>
+
+      {/* Datos personales del paciente */}
+      {datosPaciente && (
+        <div
+          className="mb-4 p-3 rounded shadow-sm"
+          style={{ background: "#f8fafc" }}
+        >
+          <h5 className="fw-bold mb-3" style={{ color: "#2e5da1" }}>
+            Datos personales
+          </h5>
+          <div>
+            <b>ID de paciente:</b> {datosPaciente.id_paciente} <br />
+            <b>Nombre:</b> {datosPaciente.nombres} {datosPaciente.apellidos}{" "}
+            <br />
+            <b>Edad:</b> {calcularEdad(datosPaciente.fechaNacimiento)} <br />
+            <b>Fecha de Nacimiento:</b> {formatearFecha(datosPaciente.fechaNacimiento)}{" "}
+            <br />
+            <b>Correo:</b> {datosPaciente.correo} <br />
+            <b>Teléfono:</b>{" "}
+            {datosPaciente.telefono || (
+              <span className="text-muted">No registrado</span>
+            )}{" "}
+            <br />
+            <b>Dirección:</b>{" "}
+            {datosPaciente.direccion || (
+              <span className="text-muted">No registrada</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-5">Cargando...</div>
       ) : mensaje ? (

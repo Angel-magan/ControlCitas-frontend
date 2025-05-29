@@ -11,6 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -25,7 +26,7 @@ const Login = () => {
     }
 
     axios
-      .post("http://controlcitas-backend-production.up.railway.app/api/usuarios/iniciarSesion", {
+      .post(`${apiUrl}/api/usuarios/iniciarSesion`, {
         correo: email,
         contrasena: password,
       })
@@ -48,7 +49,10 @@ const Login = () => {
           localStorage.removeItem("medico");
         }
         if (response.data.paciente) {
-          localStorage.setItem("paciente", JSON.stringify(response.data.paciente));
+          localStorage.setItem(
+            "paciente",
+            JSON.stringify(response.data.paciente)
+          );
         } else {
           localStorage.removeItem("paciente");
         }
@@ -81,7 +85,10 @@ const Login = () => {
       <div className="login-container">
         <section className="login-section">
           <h2 className="text-center text-dark mb-3">Iniciar sesión</h2>
-          <div className="text-light border-b-3" style={{ textAlign: "center" }}>
+          <div
+            className="text-light border-b-3"
+            style={{ textAlign: "center" }}
+          >
             <input
               className="form-control mb-3"
               style={{ height: "43px" }}

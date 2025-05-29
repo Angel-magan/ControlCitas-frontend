@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const estados = [
   { value: "", label: "Todos" },
@@ -41,17 +42,37 @@ const MisCitas = () => {
   }, [tipo, estado]);
 
   const cancelarCita = async (id_cita) => {
-    if (!window.confirm("¿Seguro que deseas cancelar esta cita?")) return;
+    const result = await Swal.fire({
+      title: "¿Seguro que deseas cancelar esta cita?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, cancelar",
+      cancelButtonText: "No",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       const id_paciente = paciente.id_paciente;
-      await axios.put(`${apiUrl}/api/pacientes/cancelarCita`, {
+      await axios.put(`${apiUrl}/api/pacientes/cancelarCita/${id_cita}`, {
         id_paciente,
-        id_cita,
       });
       cargarCitas();
-      setMensaje("Cita cancelada exitosamente.");
+      Swal.fire({
+        icon: "success",
+        title: "Cita cancelada exitosamente.",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     } catch (err) {
-      setMensaje(err.response?.data?.error || "Error al cancelar cita");
+      Swal.fire({
+        icon: "error",
+        title: "Error al cancelar cita",
+        text: err.response?.data?.error || "Error al cancelar cita",
+      });
     }
   };
 
@@ -183,10 +204,10 @@ const MisCitas = () => {
                           c.estado === 0
                             ? "badge bg-primary"
                             : c.estado === 1
-                            ? "badge bg-success"
-                            : c.estado === 2
-                            ? "badge bg-warning text-dark"
-                            : "badge bg-danger"
+                              ? "badge bg-success"
+                              : c.estado === 2
+                                ? "badge bg-warning text-dark"
+                                : "badge bg-danger"
                         }
                       >
                         {

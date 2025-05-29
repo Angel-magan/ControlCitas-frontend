@@ -91,7 +91,7 @@ const CitasPacienteMedico = ({ paciente }) => {
 
   return (
     <div className="mt-4">
-      <h5>
+      <h5 className="fw-bold">
         Citas de {paciente.nombres} {paciente.apellidos}
       </h5>
       {loading ? (
@@ -207,6 +207,12 @@ const CitasPacienteMedico = ({ paciente }) => {
               <b>Fecha:</b> {formatearFecha(detalle.fecha_cita)}
               <br />
               <b>Hora:</b> {detalle.hora_cita}
+              <br />
+              <b>Médico:</b> {detalle.medico_nombre} {detalle.medico_apellido}
+              <br />
+              <b>Especialidad:</b> {detalle.especialidad}
+              <br />
+              <b>Motivo:</b> {detalle.motivo}
               <br />
               <b>Estado:</b>{" "}
               {detalle.estado === 1

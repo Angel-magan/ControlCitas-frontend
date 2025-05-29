@@ -194,6 +194,12 @@ const UsuariosAdmin = () => {
           Gestión de Usuarios Admin
         </h3>
 
+        <div className="alert alert-info mb-4" style={{ borderRadius: "10px" }}>
+          <b>Nota:</b> Esta sección solo permite <b>agregar</b> usuarios con rol <b>admin</b>.
+          Solo los usuarios admin pueden ser <b>eliminados</b>.
+          El resto de usuarios (pacientes y médicos) solo pueden <b>editar</b> datos no sensibles (no se puede cambiar su correo, contraseña ni rol desde aquí).
+        </div>
+
         {/* Buscador y filtros */}
         <form className="row g-2 mb-4 align-items-end">
           <div className="col-md-4">
@@ -408,8 +414,8 @@ const UsuariosAdmin = () => {
                       {usuario.rol === "paciente" && usuario.id_paciente
                         ? `Paciente: ${usuario.id_paciente}`
                         : usuario.rol === "medico" && usuario.id_medico
-                        ? `Médico: ${usuario.id_medico}`
-                        : "-"}
+                          ? `Médico: ${usuario.id_medico}`
+                          : "-"}
                     </td>
                     <td>
                       <button

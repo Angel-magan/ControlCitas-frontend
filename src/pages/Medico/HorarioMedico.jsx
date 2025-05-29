@@ -42,39 +42,73 @@ const HorarioMedico = () => {
   }, []);
 
   const handleAgregar = async (e) => {
-    e.preventDefault();
-    if (!dia || !horaInicio || !horaFin) {
-      Swal.fire("Error", "Completa todos los campos.", "error");
-      return;
-    }
-    if (horaInicio >= horaFin) {
-      Swal.fire(
-        "Error",
-        "La hora de inicio debe ser menor que la de fin.",
-        "error"
-      );
-      return;
-    }
-    try {
-      await axios.post(`${apiUrl}/api/medico/horarios`, {
-        id_medico: medico.id_medico,
-        dia_semana: dia,
-        hora_inicio: horaInicio,
-        hora_fin: horaFin,
-      });
-      Swal.fire(
-        "Horario agregado",
-        "El horario fue registrado correctamente.",
-        "success"
-      );
-      setDia("");
-      setHoraInicio("");
-      setHoraFin("");
-      fetchHorarios();
-    } catch {
-      Swal.fire("Error", "No se pudo agregar el horario.", "error");
-    }
-  };
+  e.preventDefault();
+  if (!dia || !horaInicio || !horaFin) {
+    Swal.fire("Error", "Completa todos los campos.", "error");
+    return;
+  }
+  if (horaInicio >= horaFin) {
+    Swal.fire(
+      "Error",
+      "La hora de inicio debe ser menor que la de fin.",
+      "error"
+    );
+    return;
+  }
+
+  // Validación: diferencia divisible entre 30 minutos
+  const [hIni, mIni] = horaInicio.split(":").map(Number);
+  const [hFin, mFin] = horaFin.split(":").map(Number);
+  const minutosInicio = hIni * 60 + mIni;
+  const minutosFin = hFin * 60 + mFin;
+  const diferencia = minutosFin - minutosInicio;
+  if (diferencia < 30 || diferencia % 30 !== 0) {
+    Swal.fire(
+      "Error",
+      "El horario debe ser de al menos 30 minutos y múltiplo de 30 minutos.",
+      "error"
+    );
+    return;
+  }
+
+  // Validación: no traslapar con horarios existentes
+  const traslape = horarios.some(
+    (h) =>
+      h.dia_semana === dia &&
+      !(
+        minutosFin <= parseInt(h.hora_inicio.split(":")[0]) * 60 + parseInt(h.hora_inicio.split(":")[1]) ||
+        minutosInicio >= parseInt(h.hora_fin.split(":")[0]) * 60 + parseInt(h.hora_fin.split(":")[1])
+      )
+  );
+  if (traslape) {
+    Swal.fire(
+      "Error",
+      "Ya existe un horario que se traslapa con este rango.",
+      "error"
+    );
+    return;
+  }
+
+  try {
+    await axios.post(`${apiUrl}/api/medico/horarios`, {
+      id_medico: medico.id_medico,
+      dia_semana: dia,
+      hora_inicio: horaInicio,
+      hora_fin: horaFin,
+    });
+    Swal.fire(
+      "Horario agregado",
+      "El horario fue registrado correctamente.",
+      "success"
+    );
+    setDia("");
+    setHoraInicio("");
+    setHoraFin("");
+    fetchHorarios();
+  } catch {
+    Swal.fire("Error", "No se pudo agregar el horario.", "error");
+  }
+};
 
   const handleEliminar = async (id_horario_medico) => {
     const confirm = await Swal.fire({

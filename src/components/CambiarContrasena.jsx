@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Form, Button, Card, Alert, Container, Row, Col, InputGroup } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Card,
+  Alert,
+  Container,
+  Row,
+  Col,
+  InputGroup,
+} from "react-bootstrap";
 import axios from "axios";
 // Ya tienes bootstrap-icons/font/bootstrap-icons.css importado globalmente
 
@@ -11,6 +20,9 @@ const CambiarContrasena = () => {
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Agrega la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Toggles para mostrar/ocultar contraseñas
   const [showActual, setShowActual] = useState(false);
@@ -35,7 +47,7 @@ const CambiarContrasena = () => {
     setLoading(true);
     try {
       await axios.post(
-        "http://localhost:5000/api/usuarios/cambiar-contrasena",
+        `${apiUrl}/api/usuarios/cambiar-contrasena`, // Usa la variable aquí
         {
           id_usuario: user.id_usuario,
           contrasenaActual,
@@ -94,9 +106,7 @@ const CambiarContrasena = () => {
         <Col xs={12} md={7} lg={5}>
           <Card style={cardStyle}>
             <Card.Body>
-              <Card.Title style={titleStyle}>
-                Cambiar Contraseña
-              </Card.Title>
+              <Card.Title style={titleStyle}>Cambiar Contraseña</Card.Title>
               {mensaje && <Alert variant="success">{mensaje}</Alert>}
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit} autoComplete="off">
@@ -116,7 +126,11 @@ const CambiarContrasena = () => {
                       onClick={() => setShowActual((v) => !v)}
                       style={iconBtnStyle}
                     >
-                      <i className={`bi ${showActual ? "bi-eye-slash-fill" : "bi-eye-fill"}`}></i>
+                      <i
+                        className={`bi ${
+                          showActual ? "bi-eye-slash-fill" : "bi-eye-fill"
+                        }`}
+                      ></i>
                     </Button>
                   </InputGroup>
                 </Form.Group>
@@ -137,12 +151,18 @@ const CambiarContrasena = () => {
                       onClick={() => setShowNueva((v) => !v)}
                       style={iconBtnStyle}
                     >
-                      <i className={`bi ${showNueva ? "bi-eye-slash-fill" : "bi-eye-fill"}`}></i>
+                      <i
+                        className={`bi ${
+                          showNueva ? "bi-eye-slash-fill" : "bi-eye-fill"
+                        }`}
+                      ></i>
                     </Button>
                   </InputGroup>
                 </Form.Group>
                 <Form.Group className="mb-4" controlId="confirmarContrasena">
-                  <Form.Label style={labelStyle}>Confirmar Nueva Contraseña</Form.Label>
+                  <Form.Label style={labelStyle}>
+                    Confirmar Nueva Contraseña
+                  </Form.Label>
                   <InputGroup>
                     <Form.Control
                       type={showConfirmar ? "text" : "password"}
@@ -156,7 +176,11 @@ const CambiarContrasena = () => {
                       onClick={() => setShowConfirmar((v) => !v)}
                       style={iconBtnStyle}
                     >
-                      <i className={`bi ${showConfirmar ? "bi-eye-slash-fill" : "bi-eye-fill"}`}></i>
+                      <i
+                        className={`bi ${
+                          showConfirmar ? "bi-eye-slash-fill" : "bi-eye-fill"
+                        }`}
+                      ></i>
                     </Button>
                   </InputGroup>
                 </Form.Group>

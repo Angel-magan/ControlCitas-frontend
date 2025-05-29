@@ -7,12 +7,15 @@ const CitasPacienteMedico = ({ paciente }) => {
   const [loading, setLoading] = useState(false);
   const [detalle, setDetalle] = useState(null);
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   // Contactos del paciente
   const [contactos, setContactos] = useState([]);
   useEffect(() => {
     if (paciente?.id_paciente) {
       axios
-        .get("http://localhost:5000/api/pacientes/contactos", {
+        .get(`${apiUrl}/api/pacientes/contactos`, {
           params: { id_paciente: paciente.id_paciente },
         })
         .then((res) => setContactos(res.data))
@@ -29,7 +32,9 @@ const CitasPacienteMedico = ({ paciente }) => {
   const cargarCitas = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/medico/expediente/${paciente.id_paciente}`);
+      const res = await axios.get(
+        `${apiUrl}/api/medico/expediente/${paciente.id_paciente}`
+      );
       setCitas(res.data);
     } catch {
       setCitas([]);
@@ -47,13 +52,18 @@ const CitasPacienteMedico = ({ paciente }) => {
       showCancelButton: true,
     });
     if (descripcion) {
-        console.log(id_cita, descripcion);
       try {
-        await axios.post(`http://localhost:5000/api/medico/agregar-informe/${id_cita}`, { descripcion });
+        await axios.post(`${apiUrl}/api/medico/agregar-informe/${id_cita}`, {
+          descripcion,
+        });
         Swal.fire("Informe guardado", "", "success");
         cargarCitas();
       } catch (err) {
-        Swal.fire("Error", err.response?.data?.error || "No se pudo guardar el informe", "error");
+        Swal.fire(
+          "Error",
+          err.response?.data?.error || "No se pudo guardar el informe",
+          "error"
+        );
       }
     }
   };
@@ -87,7 +97,9 @@ const CitasPacienteMedico = ({ paciente }) => {
       {loading ? (
         <div className="text-center text-secondary py-4">Cargando...</div>
       ) : citas.length === 0 ? (
-        <div className="alert alert-info text-center">No hay citas para este paciente.</div>
+        <div className="alert alert-info text-center">
+          No hay citas para este paciente.
+        </div>
       ) : (
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
@@ -150,11 +162,11 @@ const CitasPacienteMedico = ({ paciente }) => {
                       )}
                     {cita.estado === 0 &&
                       !citaYaPaso(cita.fecha_cita, cita.hora_cita) && (
-                        <span className="text-muted ms-2">Aún no puedes agregar informe</span>
+                        <span className="text-muted ms-2">
+                          Aún no puedes agregar informe
+                        </span>
                       )}
-                    {cita.informe && (
-                      <span className="ms-2"></span>
-                    )}
+                    {cita.informe && <span className="ms-2"></span>}
                   </td>
                 </tr>
               ))}
@@ -206,7 +218,10 @@ const CitasPacienteMedico = ({ paciente }) => {
                 : "Pendiente"}
               <br />
               <b>Informe:</b>
-              <div className="border rounded p-2 mt-1 mb-2" style={{ minHeight: 40 }}>
+              <div
+                className="border rounded p-2 mt-1 mb-2"
+                style={{ minHeight: 40 }}
+              >
                 {detalle.informe ? (
                   <span>{detalle.informe}</span>
                 ) : (
@@ -229,7 +244,8 @@ const CitasPacienteMedico = ({ paciente }) => {
           Contactos de emergencia del paciente
         </h5>
         <div className="alert alert-warning" style={{ fontSize: "1rem" }}>
-          <b>Nota:</b> Estos son los <b>contactos de emergencia</b> que el personal médico puede contactar en caso de cualquier emergencia.
+          <b>Nota:</b> Estos son los <b>contactos de emergencia</b> que el
+          personal médico puede contactar en caso de cualquier emergencia.
         </div>
         <div className="table-responsive">
           <table className="table table-hover align-middle">

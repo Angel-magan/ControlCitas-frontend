@@ -11,13 +11,16 @@ const EspecialidadesAdmin = () => {
   const [busqueda, setBusqueda] = useState("");
   const [busquedaId, setBusquedaId] = useState("");
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     fetchEspecialidades();
   }, []);
 
   const fetchEspecialidades = () => {
     axios
-      .get("http://localhost:5000/api/admin/especialidades")
+      .get(`${apiUrl}/api/admin/especialidades`)
       .then((res) => setEspecialidades(res.data))
       .catch(() => setEspecialidades([]));
   };
@@ -34,20 +37,21 @@ const EspecialidadesAdmin = () => {
     }
     try {
       if (editId) {
-        await axios.put(
-          `http://localhost:5000/api/admin/especialidades/${editId}`,
-          form
-        );
+        await axios.put(`${apiUrl}/api/admin/especialidades/${editId}`, form);
         Swal.fire("¡Actualizado!", "Especialidad actualizada.", "success");
       } else {
-        await axios.post("http://localhost:5000/api/admin/especialidades", form);
+        await axios.post(`${apiUrl}/api/admin/especialidades`, form);
         Swal.fire("¡Agregado!", "Especialidad registrada.", "success");
       }
       setForm({ nombre: "", descripcion: "" });
       setEditId(null);
       fetchEspecialidades();
     } catch (err) {
-      Swal.fire("Error", err.response?.data?.message || "No se pudo guardar", "error");
+      Swal.fire(
+        "Error",
+        err.response?.data?.message || "No se pudo guardar",
+        "error"
+      );
     }
   };
 
@@ -67,13 +71,14 @@ const EspecialidadesAdmin = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/api/admin/especialidades/${id}`);
+          await axios.delete(`${apiUrl}/api/admin/especialidades/${id}`);
           Swal.fire("Eliminado", "Especialidad eliminada.", "success");
           fetchEspecialidades();
         } catch (err) {
           Swal.fire(
             "Error",
-            err.response?.data?.message || "No se pudo eliminar la especialidad.",
+            err.response?.data?.message ||
+              "No se pudo eliminar la especialidad.",
             "error"
           );
         }
@@ -124,12 +129,14 @@ const EspecialidadesAdmin = () => {
         {/* Buscador y filtro */}
         <form className="row g-2 mb-4 align-items-end">
           <div className="col-md-6">
-            <label className="form-label">Buscar por nombre o descripción</label>
+            <label className="form-label">
+              Buscar por nombre o descripción
+            </label>
             <input
               type="text"
               className="form-control"
               value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
+              onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Ej: Cardiología, cirugía..."
             />
           </div>
@@ -139,7 +146,7 @@ const EspecialidadesAdmin = () => {
               type="number"
               className="form-control"
               value={busquedaId}
-              onChange={e => setBusquedaId(e.target.value)}
+              onChange={(e) => setBusquedaId(e.target.value)}
               placeholder="ID especialidad"
             />
           </div>

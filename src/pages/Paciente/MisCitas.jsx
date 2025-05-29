@@ -16,15 +16,17 @@ const MisCitas = () => {
   const [mensaje, setMensaje] = useState("");
   const paciente = JSON.parse(localStorage.getItem("paciente"));
 
+  // Declara la variable de entorno para la URL
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const cargarCitas = async () => {
     try {
-      console.log(paciente);
       const id_paciente = paciente.id_paciente;
       const params = { id_paciente, tipo };
       if (estado) params.estado = estado;
-      console.log(params);
-      console.log(id_paciente);
-      const res = await axios.get("http://localhost:5000/api/pacientes/consultarCitas", { params });
+      const res = await axios.get(`${apiUrl}/api/pacientes/consultarCitas`, {
+        params,
+      });
       setCitas(res.data);
       if (res.data.length === 0) setMensaje("No hay citas registradas.");
       else setMensaje("");
@@ -38,12 +40,14 @@ const MisCitas = () => {
     // eslint-disable-next-line
   }, [tipo, estado]);
 
-  const cancelarCita = async id_cita => {
+  const cancelarCita = async (id_cita) => {
     if (!window.confirm("¿Seguro que deseas cancelar esta cita?")) return;
     try {
-      
       const id_paciente = paciente.id_paciente;
-      await axios.put("http://localhost:5000/api/pacientes/cancelarCita", { id_paciente, id_cita });
+      await axios.put(`${apiUrl}/api/pacientes/cancelarCita`, {
+        id_paciente,
+        id_cita,
+      });
       cargarCitas();
       setMensaje("Cita cancelada exitosamente.");
     } catch (err) {
@@ -52,13 +56,13 @@ const MisCitas = () => {
   };
 
   const formatearFecha = (fechaStr) => {
-        if (!fechaStr) return "";
-        const fecha = new Date(fechaStr);
-        const dia = String(fecha.getDate()).padStart(2, "0");
-        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-        const anio = fecha.getFullYear();
-        return `${dia}/${mes}/${anio}`;
-    };
+    if (!fechaStr) return "";
+    const fecha = new Date(fechaStr);
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  };
 
   return (
     <>
@@ -130,10 +134,12 @@ const MisCitas = () => {
               fontWeight: "bold",
             }}
             value={estado}
-            onChange={e => setEstado(e.target.value)}
+            onChange={(e) => setEstado(e.target.value)}
           >
-            {estados.map(e => (
-              <option key={e.value} value={e.value}>{e.label}</option>
+            {estados.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
             ))}
           </select>
         </div>
@@ -146,7 +152,10 @@ const MisCitas = () => {
           </div>
         )}
         {citas.length > 0 && (
-          <div className="table-responsive" style={{ maxWidth: "900px", width: "100%" }}>
+          <div
+            className="table-responsive"
+            style={{ maxWidth: "900px", width: "100%" }}
+          >
             <table className="table table-bordered table-hover align-middle shadow-sm">
               <thead style={{ background: "#e3eafc" }}>
                 <tr>
@@ -160,9 +169,11 @@ const MisCitas = () => {
                 </tr>
               </thead>
               <tbody>
-                {citas.map(c => (
+                {citas.map((c) => (
                   <tr key={c.id_cita}>
-                    <td>{c.medico_nombre} {c.medico_apellido}</td>
+                    <td>
+                      {c.medico_nombre} {c.medico_apellido}
+                    </td>
                     <td>{c.especialidad}</td>
                     <td>{formatearFecha(c.fecha_cita)}</td>
                     <td>{c.hora_cita.slice(0, 5)}</td>
@@ -172,13 +183,20 @@ const MisCitas = () => {
                           c.estado === 0
                             ? "badge bg-primary"
                             : c.estado === 1
-                              ? "badge bg-success"
-                              : c.estado === 2
-                                ? "badge bg-warning text-dark"
-                                : "badge bg-danger"
+                            ? "badge bg-success"
+                            : c.estado === 2
+                            ? "badge bg-warning text-dark"
+                            : "badge bg-danger"
                         }
                       >
-                        {["Pendiente", "Finalizada", "Cancelada por paciente", "Cancelada por médico"][c.estado]}
+                        {
+                          [
+                            "Pendiente",
+                            "Finalizada",
+                            "Cancelada por paciente",
+                            "Cancelada por médico",
+                          ][c.estado]
+                        }
                       </span>
                     </td>
                     <td>{c.motivo}</td>
@@ -203,7 +221,6 @@ const MisCitas = () => {
         )}
       </div>
     </>
-
   );
 };
 

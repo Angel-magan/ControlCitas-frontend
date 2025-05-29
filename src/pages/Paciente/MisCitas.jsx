@@ -89,7 +89,9 @@ const MisCitas = () => {
   const ahora = new Date();
   const citasFiltradas = citas.filter((c) => {
     const fecha = c.fecha_cita.split("T")[0];
-    const fechaHoraCita = new Date(`${fecha}T${c.hora_cita.length === 5 ? c.hora_cita + ":00" : c.hora_cita}`);
+    const fechaHoraCita = new Date(
+      `${fecha}T${c.hora_cita.length === 5 ? c.hora_cita + ":00" : c.hora_cita}`
+    );
     if (tipo === "pasadas") {
       return c.estado !== 0 || fechaHoraCita < ahora;
     } else if (tipo === "futuras") {
@@ -97,8 +99,6 @@ const MisCitas = () => {
     }
     return true;
   });
-
-
 
   return (
     <>
@@ -219,10 +219,10 @@ const MisCitas = () => {
                           c.estado === 0
                             ? "badge bg-primary"
                             : c.estado === 1
-                              ? "badge bg-success"
-                              : c.estado === 2
-                                ? "badge bg-warning text-dark"
-                                : "badge bg-danger"
+                            ? "badge bg-success"
+                            : c.estado === 2
+                            ? "badge bg-warning text-dark"
+                            : "badge bg-danger"
                         }
                       >
                         {
@@ -237,7 +237,7 @@ const MisCitas = () => {
                     </td>
                     <td>{c.motivo}</td>
                     <td>
-                      {tipo === "futuras" && c.estado === 0 ? (
+                      {/* {tipo === "futuras" && c.estado === 0 ? (
                         <button
                           className="btn btn-outline-danger btn-sm"
                           style={{ borderRadius: "0.5rem", fontWeight: "bold" }}
@@ -247,7 +247,41 @@ const MisCitas = () => {
                         </button>
                       ) : (
                         "-"
-                      )}
+                      )} */}
+                      {tipo === "futuras" && c.estado === 0
+                        ? (() => {
+                            const fecha = c.fecha_cita.split("T")[0];
+                            const hora =
+                              c.hora_cita.length === 5
+                                ? c.hora_cita + ":00"
+                                : c.hora_cita;
+                            const fechaHoraCita = new Date(`${fecha}T${hora}`);
+                            const ahora = new Date();
+                            const diferenciaEnMs = fechaHoraCita - ahora;
+                            const diferenciaEnMin =
+                              diferenciaEnMs / (1000 * 60);
+
+                            return diferenciaEnMin >= 60 ? (
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                style={{
+                                  borderRadius: "0.5rem",
+                                  fontWeight: "bold",
+                                }}
+                                onClick={() => cancelarCita(c.id_cita)}
+                              >
+                                Cancelar
+                              </button>
+                            ) : (
+                              <span
+                                className="text-muted"
+                                style={{ fontSize: "0.9rem" }}
+                              >
+                                No disponible
+                              </span>
+                            );
+                          })()
+                        : "-"}
                     </td>
                   </tr>
                 ))}

@@ -263,7 +263,7 @@ const AgendarCita = () => {
               className="form-control"
               required
               style={{ borderRadius: "0.7rem", border: "1px solid #e3eafc" }}
-              min={new Date().toISOString().split("T")[0]}
+              
             />
           </div>
           <div className="mb-3">
